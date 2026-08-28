@@ -1,0 +1,2164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+<title>Lash & Nail Client Studio</title>
+<style>
+/* ====== Reset & Base ====== */
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#F9F7F4;
+  --card:#FFFFFF;
+  --border:#EFECE6;
+  --text:#3D3A36;
+  --accent:#C4A484;
+  --muted:#9B958C;
+  --light-muted:#C4BFB7;
+  --danger:#C47A74;
+  --radius:10px;
+  --shadow:0 1px 3px rgba(61,58,54,.04);
+}
+html,body{height:100%}
+body{
+  font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Oxygen,Ubuntu,sans-serif;
+  background:var(--bg);
+  color:var(--text);
+  font-weight:400;
+  font-size:14px;
+  line-height:1.5;
+  -webkit-font-smoothing:antialiased;
+}
+input,select,textarea,button{font-family:inherit;font-size:inherit}
+
+/* ====== Layout ====== */
+#app{display:flex;min-height:100vh}
+
+/* Sidebar */
+#sidebar{
+  width:72px;
+  background:var(--card);
+  border-right:1px solid var(--border);
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  padding-top:20px;
+  gap:2px;
+  flex-shrink:0;
+  position:sticky;
+  top:0;
+  height:100vh;
+  z-index:50;
+}
+.nav-item{
+  width:64px;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  padding:10px 2px;
+  cursor:pointer;
+  border-radius:8px;
+  transition:background .15s ease;
+  border:none;
+  background:transparent;
+  color:var(--text);
+}
+.nav-item:hover{background:var(--bg)}
+.nav-item.active{background:var(--bg)}
+.nav-item svg{width:21px;height:21px;stroke:var(--muted);transition:stroke .15s ease}
+.nav-item.active svg{stroke:var(--accent)}
+.nav-item .label{font-size:8px;font-weight:500;margin-top:5px;color:var(--muted);text-align:center;line-height:1.2}
+.nav-item.active .label{color:var(--accent)}
+
+/* Main content */
+#main{flex:1;overflow-y:auto;max-height:100vh}
+.page{display:none;padding:32px 40px 90px}
+.page.active{display:block}
+.page-title{
+  font-size:22px;
+  font-weight:500;
+  color:var(--text);
+  margin-bottom:6px;
+}
+.page-sub{font-size:13px;color:var(--muted);margin-bottom:28px}
+
+/* ====== Cards ====== */
+.card{
+  background:var(--card);
+  border:1px solid var(--border);
+  border-radius:var(--radius);
+  padding:20px;
+}
+.stat-grid{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:16px;
+  margin-bottom:32px;
+}
+.stat-card{
+  background:var(--card);
+  border:1px solid var(--border);
+  border-radius:var(--radius);
+  padding:20px 22px;
+}
+.stat-card .stat-label{font-size:11px;color:var(--muted);font-weight:500;text-transform:uppercase;letter-spacing:.5px}
+.stat-card .stat-value{font-size:28px;font-weight:500;color:var(--text);margin-top:8px}
+
+/* ====== Dashboard follow-up list ====== */
+.followup-list{display:flex;flex-direction:column;gap:10px}
+.followup-item{
+  background:var(--card);
+  border:1px solid var(--border);
+  border-radius:var(--radius);
+  padding:14px 18px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+}
+.followup-info{flex:1;min-width:0}
+.followup-name{font-weight:500;font-size:14px;color:var(--text)}
+.followup-detail{font-size:12px;color:var(--muted);margin-top:2px}
+.followup-type{
+  display:inline-block;
+  font-size:10px;
+  padding:2px 8px;
+  border-radius:4px;
+  background:#F0EBE3;
+  color:var(--accent);
+  font-weight:500;
+  margin-left:6px;
+}
+.btn-copy{
+  background:transparent;
+  border:1px solid var(--border);
+  border-radius:6px;
+  padding:6px 14px;
+  cursor:pointer;
+  color:var(--text);
+  font-size:12px;
+  font-weight:500;
+  transition:all .15s ease;
+  white-space:nowrap;
+}
+.btn-copy:hover{border-color:var(--accent);color:var(--accent)}
+
+/* ====== Clients list ====== */
+.client-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(260px,1fr));
+  gap:14px;
+}
+.client-card{
+  background:var(--card);
+  border:1px solid var(--border);
+  border-radius:var(--radius);
+  padding:18px;
+  cursor:pointer;
+  transition:border-color .15s ease,box-shadow .15s ease;
+}
+.client-card:hover{border-color:var(--accent);box-shadow:var(--shadow)}
+.client-card .name{font-weight:500;font-size:15px;color:var(--text)}
+.client-card .phone{font-size:13px;color:var(--muted);margin-top:4px}
+.client-card .last-service{font-size:11px;color:var(--light-muted);margin-top:8px}
+.client-card .service-type{
+  display:inline-block;
+  font-size:10px;
+  padding:2px 7px;
+  border-radius:4px;
+  background:#F0EBE3;
+  color:var(--accent);
+  margin-left:6px;
+}
+.client-card .btn-delete-client{
+  margin-top:10px;
+  background:transparent;
+  border:1px solid var(--border);
+  border-radius:6px;
+  padding:5px 12px;
+  cursor:pointer;
+  color:var(--danger);
+  font-size:11px;
+  font-weight:500;
+  transition:border-color .15s ease;
+}
+.client-card .btn-delete-client:hover{border-color:var(--danger)}
+
+/* ====== Intake form ====== */
+.intake-section{margin-bottom:28px}
+.section-header{
+  font-size:14px;
+  font-weight:500;
+  color:var(--text);
+  margin-bottom:14px;
+  padding-bottom:8px;
+  border-bottom:1px solid var(--border);
+}
+.field-group{display:flex;flex-direction:column;gap:6px;margin-bottom:16px}
+.field-label{
+  font-size:12px;
+  font-weight:500;
+  color:var(--text);
+  display:flex;
+  align-items:center;
+  gap:5px;
+}
+.input,.select,textarea{
+  background:var(--card);
+  border:1px solid var(--border);
+  border-radius:8px;
+  padding:10px 12px;
+  font-size:14px;
+  color:var(--text);
+  outline:none;
+  transition:border-color .15s ease;
+  width:100%;
+}
+.input:focus,.select:focus,textarea:focus{border-color:var(--accent)}
+textarea{resize:vertical;min-height:60px}
+
+.hidden{display:none!important}
+
+/* Date field overlay (force English display) */
+.date-wrapper{position:relative}
+.date-wrapper input[type="date"]{
+  color:transparent;
+  caret-color:transparent;
+  -webkit-text-fill-color:transparent;
+}
+.date-wrapper input[type="date"]::-webkit-calendar-picker-indicator{
+  position:relative;
+  z-index:2;
+  cursor:pointer;
+  opacity:.55;
+}
+.date-wrapper .date-overlay{
+  position:absolute;
+  left:12px;
+  top:50%;
+  transform:translateY(-50%);
+  pointer-events:none;
+  color:var(--text);
+  font-size:14px;
+  background:var(--card);
+  right:30px;
+  white-space:nowrap;
+  overflow:hidden;
+  line-height:1.5;
+}
+.date-wrapper .date-overlay.empty{color:var(--muted);font-size:14px}
+
+/* Combobox (hybrid input + datalist) */
+.combobox{position:relative}
+.combobox input{padding-right:30px}
+.combobox::after{
+  content:'';
+  position:absolute;
+  right:12px;
+  top:50%;
+  transform:translateY(-25%);
+  width:8px;
+  height:8px;
+  border-right:1.5px solid var(--muted);
+  border-bottom:1.5px solid var(--muted);
+  pointer-events:none;
+}
+
+/* Toggle switch */
+.toggle-row{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:4px 0}
+.toggle-switch{
+  position:relative;
+  width:44px;
+  height:24px;
+  border-radius:12px;
+  background:var(--border);
+  cursor:pointer;
+  transition:background .2s ease;
+  flex-shrink:0;
+}
+.toggle-switch.active{background:var(--accent)}
+.toggle-switch::after{
+  content:'';
+  position:absolute;
+  top:3px;
+  left:3px;
+  width:18px;
+  height:18px;
+  border-radius:50%;
+  background:#fff;
+  transition:transform .2s ease;
+  box-shadow:0 1px 3px rgba(0,0,0,.15);
+}
+.toggle-switch.active::after{transform:translateX(20px)}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+
+/* Segmented control */
+.segmented{
+  display:inline-flex;
+  background:var(--bg);
+  border:1px solid var(--border);
+  border-radius:8px;
+  padding:3px;
+  gap:2px;
+  margin:0 auto 20px;
+}
+.segmented.hidden{display:none}
+.seg-btn{
+  padding:8px 24px;
+  border:none;
+  background:transparent;
+  border-radius:6px;
+  cursor:pointer;
+  font-size:13px;
+  font-weight:500;
+  color:var(--muted);
+  transition:all .15s ease;
+}
+.seg-btn.active{background:var(--card);color:var(--accent);box-shadow:var(--shadow)}
+.seg-center{display:flex;justify-content:center}
+
+/* Photo upload */
+.photo-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:12px}
+.photo-upload{
+  position:relative;
+  aspect-ratio:1;
+  border:1px dashed var(--border);
+  border-radius:8px;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  cursor:pointer;
+  overflow:hidden;
+  background:var(--bg);
+  transition:border-color .15s ease;
+}
+.photo-upload:hover{border-color:var(--accent)}
+.photo-upload.has-image{border-style:solid}
+.photo-upload img{width:100%;height:100%;object-fit:cover;border-radius:8px}
+.photo-upload .photo-label{font-size:11px;color:var(--muted);font-weight:500;text-align:center}
+.photo-upload .remove-btn{
+  position:absolute;
+  top:4px;
+  right:4px;
+  width:22px;
+  height:22px;
+  border-radius:50%;
+  background:rgba(0,0,0,.5);
+  color:#fff;
+  border:none;
+  cursor:pointer;
+  font-size:14px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+
+/* Payment */
+.payment-row{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+
+/* Save button */
+.btn-primary{
+  background:var(--accent);
+  color:#fff;
+  border:none;
+  border-radius:8px;
+  padding:12px 32px;
+  font-size:14px;
+  font-weight:500;
+  cursor:pointer;
+  transition:opacity .15s ease;
+}
+.btn-primary:hover{opacity:.88}
+.btn-secondary{
+  background:var(--card);
+  color:var(--text);
+  border:1px solid var(--border);
+  border-radius:8px;
+  padding:12px 24px;
+  font-size:14px;
+  font-weight:500;
+  cursor:pointer;
+  transition:border-color .15s ease;
+}
+.btn-secondary:hover{border-color:var(--accent);color:var(--accent)}
+.btn-row{display:flex;gap:12px;margin-top:24px}
+
+/* ====== Settings ====== */
+.mode-buttons{display:flex;gap:12px;flex-wrap:wrap}
+.mode-btn{
+  flex:1;
+  min-width:140px;
+  padding:16px;
+  border:1px solid var(--border);
+  border-radius:var(--radius);
+  background:var(--card);
+  cursor:pointer;
+  text-align:center;
+  transition:all .15s ease;
+}
+.mode-btn:hover{border-color:var(--accent)}
+.mode-btn.active{border:2px solid var(--accent);background:#FBF7F2}
+.mode-btn .mode-title{font-weight:500;font-size:14px;color:var(--text)}
+
+.reminder-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;max-width:400px}
+
+.backup-buttons{display:flex;gap:12px;flex-wrap:wrap}
+
+/* Toast */
+#toast{
+  position:fixed;
+  bottom:24px;
+  left:50%;
+  transform:translateX(-50%) translateY(100px);
+  background:var(--text);
+  color:#fff;
+  padding:10px 24px;
+  border-radius:8px;
+  font-size:13px;
+  z-index:1000;
+  transition:transform .25s ease;
+  opacity:.95;
+}
+#toast.show{transform:translateX(-50%) translateY(0)}
+
+/* Empty state */
+.empty-state{
+  text-align:center;
+  padding:60px 20px;
+  color:var(--muted);
+}
+.empty-state .icon{font-size:32px;margin-bottom:12px;opacity:.3}
+.empty-state .text{font-size:14px}
+.empty-state .sub{font-size:12px;color:var(--light-muted);margin-top:4px}
+
+/* New client button */
+.btn-new-client{
+  background:var(--accent);
+  color:#fff;
+  border:none;
+  border-radius:8px;
+  padding:10px 20px;
+  font-size:13px;
+  font-weight:500;
+  cursor:pointer;
+  transition:opacity .15s ease;
+}
+.btn-new-client:hover{opacity:.88}
+
+/* Hidden sections */
+.lash-only,.nail-only{display:none}
+.lash-only.show{display:block}
+.nail-only.show{display:block}
+
+/* Responsive */
+@media(max-width:1024px){
+  .page{padding:24px 28px}
+}
+@media(max-width:768px){
+  #app{flex-direction:column}
+  #sidebar{
+    width:100%;
+    flex-direction:row;
+    justify-content:space-around;
+    padding-top:6px;
+    padding-bottom:6px;
+    border-right:none;
+    border-bottom:1px solid var(--border);
+    border-top:1px solid var(--border);
+    position:fixed;
+    bottom:0;
+    top:auto;
+    height:auto;
+    z-index:100;
+    background:var(--card);
+  }
+  .nav-item{width:auto;padding:6px 8px}
+  .nav-item svg{width:20px;height:20px}
+  #main{max-height:none;padding-bottom:90px}
+  .page{padding:20px 16px;padding-bottom:90px}
+  .stat-grid{grid-template-columns:1fr;gap:10px}
+  .form-row{grid-template-columns:1fr}
+  .payment-row{grid-template-columns:1fr}
+  .photo-grid{grid-template-columns:repeat(2,1fr)}
+  .reminder-grid{grid-template-columns:1fr}
+  .client-grid{grid-template-columns:1fr}
+}
+@media(max-width:480px){
+  .page{padding:16px 12px}
+  .stat-grid{gap:8px}
+  .mode-buttons{flex-direction:column}
+  .mode-btn{min-width:auto}
+}
+
+/* ====== Lash Map SVG ====== */
+.lash-map-container{
+  background:#fff;
+  border:1px solid var(--border);
+  border-radius:var(--radius);
+  padding:18px 14px 14px;
+  margin-bottom:20px;
+  position:relative;
+}
+.lash-map-title{
+  font-size:11px;
+  font-weight:600;
+  color:var(--muted);
+  text-transform:uppercase;
+  letter-spacing:1.4px;
+  margin-bottom:8px;
+  text-align:center;
+}
+.lash-map-svg{
+  width:100%;
+  max-width:380px;
+  display:block;
+  margin:0 auto;
+}
+.lash-map-zone{
+  cursor:pointer;
+}
+.lash-map-zone .lm-line{
+  stroke:var(--light-muted);
+  stroke-width:1.1;
+  transition:stroke .15s ease, stroke-width .15s ease;
+}
+.lash-map-zone .lm-dot{
+  fill:#fff;
+  transition:fill .15s ease;
+}
+.lash-map-zone:hover .lm-line{ stroke:var(--muted); }
+.lash-map-zone-label{
+  font-size:8px;
+  fill:var(--muted);
+  font-weight:600;
+  text-transform:uppercase;
+  letter-spacing:.5px;
+  transition:fill .15s ease;
+}
+.lash-map-zone-value{
+  font-size:13px;
+  fill:var(--text);
+  font-weight:700;
+  transition:fill .15s ease;
+}
+.lash-map-zone.active .lm-line{
+  stroke:var(--accent);
+  stroke-width:1.7;
+}
+.lash-map-zone.active .lm-dot{ fill:var(--accent); }
+.lash-map-zone.active .lash-map-zone-value{ fill:var(--accent); }
+.lash-map-zone.active .lash-map-zone-label{ fill:var(--accent); }
+
+/* ====== Pill Buttons ====== */
+.pill-group{
+  display:flex;
+  flex-wrap:wrap;
+  gap:8px;
+  margin-top:4px;
+}
+.pill-btn{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  padding:8px 16px;
+  border:1px solid var(--border);
+  border-radius:20px;
+  background:var(--card);
+  color:var(--text);
+  font-size:13px;
+  font-weight:500;
+  cursor:pointer;
+  transition:all .15s ease;
+  user-select:none;
+}
+.pill-btn:hover{
+  border-color:var(--light-muted);
+  background:#FAF8F5;
+}
+.pill-btn.active{
+  background:var(--accent);
+  border-color:var(--accent);
+  color:#fff;
+}
+.pill-btn-sm{
+  padding:6px 12px;
+  font-size:12px;
+  border-radius:16px;
+}
+.pill-custom-input{
+  width:100%;
+  margin-top:8px;
+  height:34px;
+  padding:0 10px;
+  border:1px solid var(--border);
+  border-radius:var(--radius-sm);
+  background:var(--card);
+  color:var(--text);
+  font-size:13px;
+  font-family:inherit;
+  outline:none;
+  transition:border-color .15s ease;
+}
+.pill-custom-input:focus{
+  border-color:var(--accent);
+}
+
+/* ====== Length Segment Inputs ====== */
+.length-segments{
+  display:grid;
+  grid-template-columns:repeat(7,1fr);
+  gap:6px;
+  margin-top:4px;
+}
+.length-segment{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:4px;
+  background:#FAF8F5;
+  border:1px solid var(--border);
+  border-radius:var(--radius);
+  padding:10px 4px;
+  cursor:pointer;
+  transition:border-color .15s ease;
+}
+.length-segment:hover{
+  border-color:var(--light-muted);
+}
+.length-segment.active{
+  border-color:var(--accent);
+  background:#FFF8F0;
+}
+.length-segment-label{
+  font-size:10px;
+  font-weight:500;
+  color:var(--muted);
+  text-transform:uppercase;
+  letter-spacing:.5px;
+}
+.length-segment-value{
+  font-size:20px;
+  font-weight:600;
+  color:var(--text);
+}
+.length-segment.active .length-segment-value{
+  color:var(--accent);
+}
+.length-segment-unit{
+  font-size:11px;
+  color:var(--muted);
+  font-weight:400;
+}
+.length-adjust-row{
+  display:flex;
+  gap:4px;
+  justify-content:center;
+}
+.length-adjust-btn{
+  width:26px;
+  height:26px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  border:1px solid var(--border);
+  border-radius:6px;
+  background:var(--card);
+  color:var(--text);
+  font-size:14px;
+  font-weight:500;
+  cursor:pointer;
+  transition:all .12s ease;
+}
+.length-adjust-btn:hover{
+  background:var(--bg);
+  border-color:var(--light-muted);
+}
+
+/* Scrollbar */
+#main::-webkit-scrollbar{width:6px}
+#main::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
+#main::-webkit-scrollbar-track{background:transparent}
+</style>
+</head>
+<body>
+<div id="app">
+
+  <!-- ====== Sidebar ====== -->
+  <nav id="sidebar">
+    <button class="nav-item active" data-page="dashboard">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/>
+        <rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/>
+      </svg>
+      <span class="label">Board</span>
+    </button>
+    <button class="nav-item" data-page="clients">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="8" r="3.5"/><path d="M4.5 21c0-4 3.4-7.5 7.5-7.5s7.5 3.5 7.5 7.5"/>
+      </svg>
+      <span class="label">Clients</span>
+    </button>
+    <button class="nav-item" data-page="intake">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="5" y="3" width="14" height="18" rx="2"/><path d="M9 3h6v3H9z"/><path d="M12 10v6M9 13h6"/>
+      </svg>
+      <span class="label">Intake</span>
+    </button>
+    <button class="nav-item" data-page="settings">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.6 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.6a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09A1.65 1.65 0 0 0 15 4.6a1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+      </svg>
+      <span class="label">Settings</span>
+    </button>
+  </nav>
+
+  <!-- ====== Main Content ====== -->
+  <main id="main">
+
+    <!-- ====== Dashboard ====== -->
+    <section id="page-dashboard" class="page active">
+      <h1 class="page-title">Dashboard</h1>
+      <p class="page-sub">Overview of your studio</p>
+
+      <div class="stat-grid">
+        <div class="stat-card">
+          <div class="stat-label">Monthly Revenue</div>
+          <div class="stat-value" id="stat-revenue">$0</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Today's Queue</div>
+          <div class="stat-value" id="stat-today">0</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Overdue Follow-ups</div>
+          <div class="stat-value" id="stat-overdue">0</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="section-header">Follow-up Reminders</div>
+        <div class="followup-list" id="followup-list"></div>
+      </div>
+    </section>
+
+    <!-- ====== Clients ====== -->
+    <section id="page-clients" class="page">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+        <h1 class="page-title">Clients</h1>
+        <button class="btn-new-client" onclick="goIntake()">+ New Client</button>
+      </div>
+      <p class="page-sub">All your client records</p>
+      <div class="client-grid" id="client-grid"></div>
+    </section>
+
+    <!-- ====== Intake ====== -->
+    <section id="page-intake" class="page">
+      <h1 class="page-title" id="intake-title">New Intake</h1>
+      <p class="page-sub">Register a new client & service</p>
+
+      <!-- Segmented control (Both mode only) -->
+      <div class="seg-center">
+        <div class="segmented hidden" id="intake-segmented">
+          <button class="seg-btn active" data-sub="lash" onclick="switchIntakeSub('lash')">Lash</button>
+          <button class="seg-btn" data-sub="nail" onclick="switchIntakeSub('nail')">Nail</button>
+        </div>
+      </div>
+
+      <!-- Client Info -->
+      <div class="intake-section">
+        <div class="section-header">Client Info</div>
+        <div class="form-row">
+          <div class="field-group">
+            <label class="field-label">Full Name</label>
+            <input class="input" id="f-name" placeholder="e.g. Sarah Johnson">
+          </div>
+          <div class="field-group">
+            <label class="field-label">Phone</label>
+            <input class="input" id="f-phone" placeholder="(555) 123-4567">
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="field-group">
+            <label class="field-label">Instagram</label>
+            <input class="input" id="f-ig" placeholder="@username">
+          </div>
+          <div class="field-group">
+            <label class="field-label">Notes / Allergies</label>
+            <textarea id="f-notes" placeholder="Allergies, preferences, etc."></textarea>
+          </div>
+        </div>
+      </div>
+
+      <!-- Staff / Tech (conditional) -->
+      <div class="intake-section hidden" id="staff-section">
+        <div class="section-header">Staff / Tech</div>
+        <div class="field-group" style="max-width:400px">
+          <label class="field-label">Staff Name</label>
+          <div class="combobox">
+            <input class="input" id="f-staff" list="dl-staff" placeholder="Select or type name">
+          </div>
+          <datalist id="dl-staff"></datalist>
+        </div>
+      </div>
+
+      <!-- Service Date & Payment -->
+      <div class="intake-section">
+        <div class="section-header">Service Date & Payment</div>
+        <div class="form-row">
+          <div class="field-group">
+            <label class="field-label">Date</label>
+            <div class="date-wrapper">
+              <input class="input" type="date" id="f-date" lang="en">
+              <span class="date-overlay empty" id="date-overlay"></span>
+            </div>
+          </div>
+          <div class="field-group">
+            <label class="field-label">Amount ($)</label>
+            <input class="input" type="number" id="f-amount" placeholder="0.00" step="0.01" min="0">
+          </div>
+        </div>
+        <div class="field-group" style="max-width:400px">
+          <label class="field-label">Payment Method</label>
+          <select class="select" id="f-payment">
+            <option value="">Select method</option>
+            <option value="Cash">Cash</option>
+            <option value="Card">Card</option>
+            <option value="Zelle/Venmo/CashApp">Zelle / Venmo / CashApp</option>
+            <option value="Gift Card/Pass">Gift Card / Pass</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Lash Fields -->
+      <div class="intake-section lash-only" id="lash-section">
+        <div class="section-header">Lash Details</div>
+
+        <!-- Lash Map Visual -->
+        <div class="lash-map-container">
+          <div class="lash-map-title">LASH MAP</div>
+          <svg class="lash-map-svg" viewBox="0 0 360 310" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <marker id="lash-arrow" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto">
+                <path d="M0,0 L8,4 L0,8 Z" fill="#c2bbb0" opacity="0.55"/>
+              </marker>
+            </defs>
+
+            <!-- thin curved directional arrow (left -> right) -->
+            <path d="M 35 54 Q 180 16 325 54"
+                  fill="none" stroke="#c2bbb0" stroke-width="1"
+                  opacity="0.5" marker-end="url(#lash-arrow)"/>
+
+            <!-- black crescent / fan eye shape (flatter + thinner) -->
+            <path d="M 20 275 C 90 188 270 188 340 275 C 270 235 90 235 20 275 Z"
+                  fill="#000"/>
+
+            <!-- Zone 1: FRONT -->
+            <g class="lash-map-zone" data-zone="z1" onclick="selectLashZone('z1')">
+              <line class="lm-line" x1="30" y1="96" x2="30" y2="265"/>
+              <circle class="lm-dot" cx="30" cy="265" r="2.6"/>
+              <text x="30" y="72" class="lash-map-zone-label" text-anchor="middle">FRONT</text>
+              <text x="30" y="88" class="lash-map-zone-value" text-anchor="middle" id="map-z1-value">11mm</text>
+            </g>
+            <!-- Zone 2: Inner -->
+            <g class="lash-map-zone" data-zone="z2" onclick="selectLashZone('z2')">
+              <line class="lm-line" x1="80" y1="96" x2="80" y2="230"/>
+              <circle class="lm-dot" cx="80" cy="230" r="2.6"/>
+              <text x="80" y="88" class="lash-map-zone-value" text-anchor="middle" id="map-z2-value">11mm</text>
+            </g>
+            <!-- Zone 3: Inner-Mid -->
+            <g class="lash-map-zone" data-zone="z3" onclick="selectLashZone('z3')">
+              <line class="lm-line" x1="130" y1="96" x2="130" y2="215"/>
+              <circle class="lm-dot" cx="130" cy="215" r="2.6"/>
+              <text x="130" y="88" class="lash-map-zone-value" text-anchor="middle" id="map-z3-value">12mm</text>
+            </g>
+            <!-- Zone 4: Center -->
+            <g class="lash-map-zone" data-zone="z4" onclick="selectLashZone('z4')">
+              <line class="lm-line" x1="180" y1="96" x2="180" y2="210"/>
+              <circle class="lm-dot" cx="180" cy="210" r="2.6"/>
+              <text x="180" y="88" class="lash-map-zone-value" text-anchor="middle" id="map-z4-value">12mm</text>
+            </g>
+            <!-- Zone 5: Outer-Mid -->
+            <g class="lash-map-zone" data-zone="z5" onclick="selectLashZone('z5')">
+              <line class="lm-line" x1="230" y1="96" x2="230" y2="215"/>
+              <circle class="lm-dot" cx="230" cy="215" r="2.6"/>
+              <text x="230" y="88" class="lash-map-zone-value" text-anchor="middle" id="map-z5-value">12mm</text>
+            </g>
+            <!-- Zone 6: Outer -->
+            <g class="lash-map-zone" data-zone="z6" onclick="selectLashZone('z6')">
+              <line class="lm-line" x1="280" y1="96" x2="280" y2="230"/>
+              <circle class="lm-dot" cx="280" cy="230" r="2.6"/>
+              <text x="280" y="88" class="lash-map-zone-value" text-anchor="middle" id="map-z6-value">11mm</text>
+            </g>
+            <!-- Zone 7: END -->
+            <g class="lash-map-zone" data-zone="z7" onclick="selectLashZone('z7')">
+              <line class="lm-line" x1="330" y1="96" x2="330" y2="265"/>
+              <circle class="lm-dot" cx="330" cy="265" r="2.6"/>
+              <text x="330" y="72" class="lash-map-zone-label" text-anchor="middle">END</text>
+              <text x="330" y="88" class="lash-map-zone-value" text-anchor="middle" id="map-z7-value">11mm</text>
+            </g>
+          </svg>
+        </div>
+
+        <!-- Length Mapping - 7 Segments -->
+        <div class="field-group">
+          <label class="field-label">Lash Mapping — Length by Zone</label>
+          <div class="length-segments">
+            <div class="length-segment" id="seg-z1" data-zone="z1" onclick="selectLashZone('z1')">
+              <span class="length-segment-label">Front</span>
+              <span class="length-segment-value" id="seg-z1-val">11<span class="length-segment-unit">mm</span></span>
+              <div class="length-adjust-row">
+                <button class="length-adjust-btn" onclick="event.stopPropagation();adjustLength('z1',-1)">−</button>
+                <button class="length-adjust-btn" onclick="event.stopPropagation();adjustLength('z1',1)">+</button>
+              </div>
+            </div>
+            <div class="length-segment" id="seg-z2" data-zone="z2" onclick="selectLashZone('z2')">
+              <span class="length-segment-label">Inner</span>
+              <span class="length-segment-value" id="seg-z2-val">11<span class="length-segment-unit">mm</span></span>
+              <div class="length-adjust-row">
+                <button class="length-adjust-btn" onclick="event.stopPropagation();adjustLength('z2',-1)">−</button>
+                <button class="length-adjust-btn" onclick="event.stopPropagation();adjustLength('z2',1)">+</button>
+              </div>
+            </div>
+            <div class="length-segment" id="seg-z3" data-zone="z3" onclick="selectLashZone('z3')">
+              <span class="length-segment-label">Inner-Mid</span>
+              <span class="length-segment-value" id="seg-z3-val">12<span class="length-segment-unit">mm</span></span>
+              <div class="length-adjust-row">
+                <button class="length-adjust-btn" onclick="event.stopPropagation();adjustLength('z3',-1)">−</button>
+                <button class="length-adjust-btn" onclick="event.stopPropagation();adjustLength('z3',1)">+</button>
+              </div>
+            </div>
+            <div class="length-segment" id="seg-z4" data-zone="z4" onclick="selectLashZone('z4')">
+              <span class="length-segment-label">Center</span>
+              <span class="length-segment-value" id="seg-z4-val">12<span class="length-segment-unit">mm</span></span>
+              <div class="length-adjust-row">
+                <button class="length-adjust-btn" onclick="event.stopPropagation();adjustLength('z4',-1)">−</button>
+                <button class="length-adjust-btn" onclick="event.stopPropagation();adjustLength('z4',1)">+</button>
+              </div>
+            </div>
+            <div class="length-segment" id="seg-z5" data-zone="z5" onclick="selectLashZone('z5')">
+              <span class="length-segment-label">Outer-Mid</span>
+              <span class="length-segment-value" id="seg-z5-val">12<span class="length-segment-unit">mm</span></span>
+              <div class="length-adjust-row">
+                <button class="length-adjust-btn" onclick="event.stopPropagation();adjustLength('z5',-1)">−</button>
+                <button class="length-adjust-btn" onclick="event.stopPropagation();adjustLength('z5',1)">+</button>
+              </div>
+            </div>
+            <div class="length-segment" id="seg-z6" data-zone="z6" onclick="selectLashZone('z6')">
+              <span class="length-segment-label">Outer</span>
+              <span class="length-segment-value" id="seg-z6-val">11<span class="length-segment-unit">mm</span></span>
+              <div class="length-adjust-row">
+                <button class="length-adjust-btn" onclick="event.stopPropagation();adjustLength('z6',-1)">−</button>
+                <button class="length-adjust-btn" onclick="event.stopPropagation();adjustLength('z6',1)">+</button>
+              </div>
+            </div>
+            <div class="length-segment" id="seg-z7" data-zone="z7" onclick="selectLashZone('z7')">
+              <span class="length-segment-label">End</span>
+              <span class="length-segment-value" id="seg-z7-val">11<span class="length-segment-unit">mm</span></span>
+              <div class="length-adjust-row">
+                <button class="length-adjust-btn" onclick="event.stopPropagation();adjustLength('z7',-1)">−</button>
+                <button class="length-adjust-btn" onclick="event.stopPropagation();adjustLength('z7',1)">+</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Main Style - Pill Buttons -->
+        <div class="field-group">
+          <label class="field-label">Main Style</label>
+          <div class="pill-group" id="style-pills">
+            <button class="pill-btn" data-val="Classic" onclick="setPillValue('style',this)">Classic</button>
+            <button class="pill-btn" data-val="Full Set" onclick="setPillValue('style',this)">Full Set</button>
+            <button class="pill-btn" data-val="Hybrid" onclick="setPillValue('style',this)">Hybrid Set</button>
+            <button class="pill-btn" data-val="Volume" onclick="setPillValue('style',this)">Volume Set</button>
+            <button class="pill-btn" data-val="Cat Eye" onclick="setPillValue('style',this)">Cat Eye</button>
+            <button class="pill-btn" data-val="Doll Eyes" onclick="setPillValue('style',this)">Doll Eyes</button>
+            <button class="pill-btn" data-val="Wispy" onclick="setPillValue('style',this)">Wispy</button>
+            <button class="pill-btn" data-val="Custom" onclick="setPillValue('style',this)">Custom</button>
+          </div>
+          <input class="pill-custom-input" id="style-custom" type="text" placeholder="Or type your own style..."
+                 oninput="onPillCustomInput('style', this.value)">
+        </div>
+
+        <div class="form-row">
+          <!-- Curl - Pill Buttons -->
+          <div class="field-group">
+            <label class="field-label">Curl</label>
+            <div class="pill-group" id="curl-pills">
+              <button class="pill-btn pill-btn-sm" data-val="J" onclick="setPillValue('curl',this)">J</button>
+              <button class="pill-btn pill-btn-sm" data-val="B" onclick="setPillValue('curl',this)">B</button>
+              <button class="pill-btn pill-btn-sm" data-val="C" onclick="setPillValue('curl',this)">C</button>
+              <button class="pill-btn pill-btn-sm" data-val="CC" onclick="setPillValue('curl',this)">CC</button>
+              <button class="pill-btn pill-btn-sm" data-val="D" onclick="setPillValue('curl',this)">D</button>
+              <button class="pill-btn pill-btn-sm" data-val="L" onclick="setPillValue('curl',this)">L</button>
+              <button class="pill-btn pill-btn-sm" data-val="L+" onclick="setPillValue('curl',this)">L+</button>
+              <button class="pill-btn pill-btn-sm" data-val="M" onclick="setPillValue('curl',this)">M</button>
+              <button class="pill-btn pill-btn-sm" data-val="U" onclick="setPillValue('curl',this)">U</button>
+            </div>
+            <input class="pill-custom-input" id="curl-custom" type="text" placeholder="Or type..."
+                   oninput="onPillCustomInput('curl', this.value)">
+          </div>
+          <!-- Thickness - Pill Buttons -->
+          <div class="field-group">
+            <label class="field-label">Diameter / Thickness</label>
+            <div class="pill-group" id="thickness-pills">
+              <button class="pill-btn pill-btn-sm" data-val="0.03" onclick="setPillValue('thickness',this)">0.03</button>
+              <button class="pill-btn pill-btn-sm" data-val="0.05" onclick="setPillValue('thickness',this)">0.05</button>
+              <button class="pill-btn pill-btn-sm" data-val="0.07" onclick="setPillValue('thickness',this)">0.07</button>
+              <button class="pill-btn pill-btn-sm" data-val="0.10" onclick="setPillValue('thickness',this)">0.10</button>
+              <button class="pill-btn pill-btn-sm" data-val="0.12" onclick="setPillValue('thickness',this)">0.12</button>
+              <button class="pill-btn pill-btn-sm" data-val="0.15" onclick="setPillValue('thickness',this)">0.15</button>
+              <button class="pill-btn pill-btn-sm" data-val="0.20" onclick="setPillValue('thickness',this)">0.20</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="field-group">
+          <label class="field-label">Adhesive / Glue</label>
+          <div class="combobox">
+            <input class="input" id="f-adhesive" list="dl-adhesive" placeholder="Select or type">
+          </div>
+          <datalist id="dl-adhesive">
+            <option value="Sky Glue">
+            <option value="Sensitive">
+            <option value="Latex-free">
+            <option value="UV">
+            <option value="Clear">
+            <option value="Black">
+          </datalist>
+        </div>
+        <div class="field-group">
+          <label class="field-label">Lash Notes</label>
+          <textarea id="f-lash-notes" placeholder="Any lash-specific notes"></textarea>
+        </div>
+        <div class="photo-grid">
+          <div class="photo-upload" data-photo="lash-before" onclick="uploadPhoto(this)">
+            <div class="photo-label">Before</div>
+          </div>
+          <div class="photo-upload" data-photo="lash-after" onclick="uploadPhoto(this)">
+            <div class="photo-label">After</div>
+          </div>
+          <div class="photo-upload" data-photo="lash-map" onclick="uploadPhoto(this)">
+            <div class="photo-label">Map Chart</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Nail Fields -->
+      <div class="intake-section nail-only" id="nail-section">
+        <div class="section-header">Nail Details</div>
+        <div class="form-row">
+          <div class="field-group">
+            <label class="field-label">Nail Shape</label>
+            <select class="select" id="f-shape">
+              <option value="">Select shape</option>
+              <option value="Square">Square</option>
+              <option value="Squoval">Squoval</option>
+              <option value="Round">Round</option>
+              <option value="Oval">Oval</option>
+              <option value="Almond">Almond</option>
+              <option value="Coffin">Coffin</option>
+              <option value="Stiletto">Stiletto</option>
+              <option value="Lip">Lip</option>
+            </select>
+          </div>
+          <div class="field-group">
+            <label class="field-label">Nail Length</label>
+            <select class="select" id="f-nail-length">
+              <option value="">Select length</option>
+              <option value="Short">Short</option>
+              <option value="Medium">Medium</option>
+              <option value="Long">Long</option>
+              <option value="XL">XL</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="field-group">
+            <label class="field-label">Service Type</label>
+            <div class="combobox">
+              <input class="input" id="f-service-type" list="dl-service-type" placeholder="Select or type">
+            </div>
+            <datalist id="dl-service-type">
+              <option value="Gel Polish">
+              <option value="Hard Gel / Builder">
+              <option value="Acrylic">
+              <option value="Gel-X / Extension">
+              <option value="Dip Powder">
+              <option value="Regular Polish">
+            </datalist>
+          </div>
+          <div class="field-group">
+            <label class="field-label">Gel Color / Polish Code</label>
+            <div class="combobox">
+              <input class="input" id="f-color" list="dl-color" placeholder="e.g. OPI NL N12 / Milky white">
+            </div>
+            <datalist id="dl-color">
+              <option value="Milky White">
+              <option value="Nude">
+              <option value="French White">
+              <option value="Soft Pink">
+              <option value="Clear">
+              <option value="Black">
+            </datalist>
+          </div>
+        </div>
+        <div class="field-group">
+          <label class="field-label">Design / Technique</label>
+          <div class="combobox">
+            <input class="input" id="f-design" list="dl-design" placeholder="Select or type">
+          </div>
+          <datalist id="dl-design">
+            <option value="Solid Color">
+            <option value="French">
+            <option value="Chrome">
+            <option value="Ombre">
+            <option value="Glitter">
+            <option value="Nail Art">
+            <option value="3D Art">
+            <option value="Encapsulated">
+          </datalist>
+        </div>
+        <div class="field-group">
+          <label class="field-label">Nail Notes</label>
+          <textarea id="f-nail-notes" placeholder="Any nail-specific notes"></textarea>
+        </div>
+        <div class="photo-grid">
+          <div class="photo-upload" data-photo="nail-inspiration" onclick="uploadPhoto(this)">
+            <div class="photo-label">Inspiration</div>
+          </div>
+          <div class="photo-upload" data-photo="nail-final" onclick="uploadPhoto(this)">
+            <div class="photo-label">Final Result</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="btn-row">
+        <button class="btn-primary" onclick="saveIntake()">Save Record</button>
+        <button class="btn-secondary" onclick="goClients()">Cancel</button>
+      </div>
+    </section>
+
+    <!-- ====== Settings ====== -->
+    <section id="page-settings" class="page">
+      <h1 class="page-title">Settings</h1>
+      <p class="page-sub">Configure your studio</p>
+
+      <!-- Business Mode -->
+      <div class="intake-section">
+        <div class="section-header">Business Mode</div>
+        <div class="mode-buttons">
+          <button class="mode-btn" data-mode="lash" onclick="setBusinessMode('lash')">
+            <div class="mode-title">Lashes Only</div>
+          </button>
+          <button class="mode-btn" data-mode="nail" onclick="setBusinessMode('nail')">
+            <div class="mode-title">Nails Only</div>
+          </button>
+          <button class="mode-btn" data-mode="both" onclick="setBusinessMode('both')">
+            <div class="mode-title">Both</div>
+          </button>
+        </div>
+      </div>
+
+      <!-- Multi-Staff Mode -->
+      <div class="intake-section">
+        <div class="section-header">Multi-Staff Mode</div>
+        <div class="toggle-row">
+          <div>
+            <div style="font-size:14px;color:var(--text)">Enable Multi-Staff Mode</div>
+            <div style="font-size:12px;color:var(--muted);margin-top:2px">
+              Show Staff / Tech field in Intake
+            </div>
+          </div>
+          <div class="toggle-switch" id="toggle-staff" onclick="toggleMultiStaff()"></div>
+        </div>
+      </div>
+
+      <!-- Reminder Rules -->
+      <div class="intake-section">
+        <div class="section-header">Reminder Rules</div>
+        <div class="reminder-grid">
+          <div class="field-group">
+            <label class="field-label">Lash Refill (days)</label>
+            <input class="input" type="number" id="set-lash-days" value="14" min="1" max="60">
+          </div>
+          <div class="field-group">
+            <label class="field-label">Nail Service (days)</label>
+            <input class="input" type="number" id="set-nail-days" value="21" min="1" max="90">
+          </div>
+        </div>
+        <button class="btn-secondary" onclick="saveReminderRules()" style="margin-top:8px">Save Rules</button>
+      </div>
+
+      <!-- Data Backup -->
+      <div class="intake-section">
+        <div class="section-header">Data Backup</div>
+        <div class="backup-buttons">
+          <button class="btn-secondary" onclick="exportJSON()">Export Backup (JSON)</button>
+          <button class="btn-secondary" onclick="exportCSV()">Export CSV</button>
+          <button class="btn-secondary" onclick="document.getElementById('import-file').click()">Import Backup (JSON)</button>
+          <input type="file" id="import-file" accept=".json" style="display:none" onchange="importJSON(event)">
+        </div>
+        <p style="font-size:12px;color:var(--muted);margin-top:14px;line-height:1.5">
+          Recommend downloading a backup file weekly to avoid browser data clearing.
+        </p>
+      </div>
+
+      <!-- About -->
+      <div class="intake-section">
+        <div class="section-header">About</div>
+        <p style="font-size:13px;color:var(--muted);line-height:1.6">
+          Lash & Nail Client Studio v1.5<br>
+          A minimalist CRM for solo beauty professionals.<br>
+          All data is stored locally in your browser. Please export backups regularly.
+        </p>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<div id="toast"></div>
+
+<script>
+/* ================================================================
+   Lash & Nail Client Studio — Core Logic
+   ================================================================ */
+
+/* ====== State ====== */
+const DB_NAME = 'LashNailStudio';
+const DB_VERSION = 1;
+const SETTINGS_KEY = 'lashNailSettings';
+let db = null;
+const state = {
+  currentPage: 'dashboard',
+  editingClientId: null,
+  intakeSubMode: 'lash',
+  settings: { businessMode: 'both', lashReminderDays: 14, nailReminderDays: 21, multiStaff: false },
+  photoData: {},
+  lashMap: { z1: 11, z2: 11, z3: 12, z4: 12, z5: 12, z6: 11, z7: 11 },
+  selectedLashZone: 'z4',
+  pillValues: { style: '', curl: '', thickness: '' }
+};
+
+/* ====== IndexedDB ====== */
+function initDB(){
+  return new Promise((resolve, reject) => {
+    const req = indexedDB.open(DB_NAME, DB_VERSION);
+    req.onupgradeneeded = (e) => {
+      const d = e.target.result;
+      if(!d.objectStoreNames.contains('clients')){
+        d.createObjectStore('clients', { keyPath: 'id' });
+      }
+      if(!d.objectStoreNames.contains('records')){
+        const store = d.createObjectStore('records', { keyPath: 'id' });
+        store.createIndex('clientId', 'clientId', { unique: false });
+      }
+    };
+    req.onsuccess = (e) => { db = e.target.result; resolve(db); };
+    req.onerror = (e) => reject(e.target.error);
+  });
+}
+
+function dbAdd(storeName, data){
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(storeName, 'readwrite');
+    const store = tx.objectStore(storeName);
+    const req = store.put(data);
+    req.onsuccess = () => resolve(data);
+    req.onerror = () => reject(req.error);
+  });
+}
+
+function dbGetAll(storeName){
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(storeName, 'readonly');
+    const store = tx.objectStore(storeName);
+    const req = store.getAll();
+    req.onsuccess = () => resolve(req.result || []);
+    req.onerror = () => reject(req.error);
+  });
+}
+
+function dbGet(storeName, id){
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(storeName, 'readonly');
+    const store = tx.objectStore(storeName);
+    const req = store.get(id);
+    req.onsuccess = () => resolve(req.result);
+    req.onerror = () => reject(req.error);
+  });
+}
+
+function dbDelete(storeName, id){
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(storeName, 'readwrite');
+    const store = tx.objectStore(storeName);
+    const req = store.delete(id);
+    req.onsuccess = () => resolve();
+    req.onerror = () => reject(req.error);
+  });
+}
+
+function dbClear(storeName){
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(storeName, 'readwrite');
+    const store = tx.objectStore(storeName);
+    const req = store.clear();
+    req.onsuccess = () => resolve();
+    req.onerror = () => reject(req.error);
+  });
+}
+
+/* ====== Settings ====== */
+function loadSettings(){
+  const raw = localStorage.getItem(SETTINGS_KEY);
+  if(raw){
+    state.settings = { ...state.settings, ...JSON.parse(raw) };
+  }
+  const mode = state.settings.businessMode;
+  document.querySelectorAll('.mode-btn').forEach(b => {
+    b.classList.toggle('active', b.dataset.mode === mode);
+  });
+  document.getElementById('set-lash-days').value = state.settings.lashReminderDays;
+  document.getElementById('set-nail-days').value = state.settings.nailReminderDays;
+  document.getElementById('toggle-staff').classList.toggle('active', !!state.settings.multiStaff);
+  applyStaffMode();
+  refreshStaffList();
+}
+
+function saveSettings(){
+  localStorage.setItem(SETTINGS_KEY, JSON.stringify(state.settings));
+}
+
+function setBusinessMode(mode){
+  state.settings.businessMode = mode;
+  saveSettings();
+  document.querySelectorAll('.mode-btn').forEach(b => {
+    b.classList.toggle('active', b.dataset.mode === mode);
+  });
+  applyBusinessMode();
+  showToast('Business mode updated');
+}
+
+function applyBusinessMode(){
+  const mode = state.settings.businessMode;
+  const lashSection = document.getElementById('lash-section');
+  const nailSection = document.getElementById('nail-section');
+  const seg = document.getElementById('intake-segmented');
+
+  lashSection.classList.remove('show');
+  nailSection.classList.remove('show');
+  seg.classList.add('hidden');
+
+  if(mode === 'lash'){
+    lashSection.classList.add('show');
+  } else if(mode === 'nail'){
+    nailSection.classList.add('show');
+  } else {
+    seg.classList.remove('hidden');
+    switchIntakeSub(state.intakeSubMode);
+  }
+}
+
+function switchIntakeSub(sub){
+  state.intakeSubMode = sub;
+  document.querySelectorAll('.seg-btn').forEach(b => {
+    b.classList.toggle('active', b.dataset.sub === sub);
+  });
+  const lashSection = document.getElementById('lash-section');
+  const nailSection = document.getElementById('nail-section');
+  lashSection.classList.toggle('show', sub === 'lash');
+  nailSection.classList.toggle('show', sub === 'nail');
+}
+
+/* ====== Multi-Staff Mode ====== */
+function toggleMultiStaff(){
+  state.settings.multiStaff = !state.settings.multiStaff;
+  saveSettings();
+  document.getElementById('toggle-staff').classList.toggle('active', state.settings.multiStaff);
+  applyStaffMode();
+  showToast(state.settings.multiStaff ? 'Multi-Staff mode ON' : 'Multi-Staff mode OFF');
+}
+
+function applyStaffMode(){
+  const staffSection = document.getElementById('staff-section');
+  if(state.settings.multiStaff){
+    staffSection.classList.remove('hidden');
+  } else {
+    staffSection.classList.add('hidden');
+  }
+}
+
+async function refreshStaffList(){
+  const records = await dbGetAll('records');
+  const staffNames = [...new Set(records.map(r => r.staff).filter(s => s && s.trim()))];
+  const dl = document.getElementById('dl-staff');
+  if(dl){
+    dl.innerHTML = staffNames.map(name => `<option value="${escapeHtml(name)}">`).join('');
+  }
+}
+
+/* ====== Navigation ====== */
+function navigateTo(page){
+  state.currentPage = page;
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById('page-' + page).classList.add('active');
+  document.querySelectorAll('.nav-item').forEach(n => {
+    n.classList.toggle('active', n.dataset.page === page);
+  });
+  if(page === 'dashboard') renderDashboard();
+  if(page === 'clients') renderClients();
+  if(page === 'settings') loadSettings();
+  if(page === 'intake') applyStaffMode();
+}
+
+function goIntake(){
+  state.editingClientId = null;
+  state.photoData = {};
+  resetIntakeForm();
+  refreshStaffList();
+  document.getElementById('intake-title').textContent = 'New Intake';
+  applyBusinessMode();
+  navigateTo('intake');
+}
+
+function goClients(){ navigateTo('clients'); }
+
+/* ====== Dashboard ====== */
+async function renderDashboard(){
+  const clients = await dbGetAll('clients');
+  const records = await dbGetAll('records');
+  const now = new Date();
+  const thisMonth = now.getMonth();
+  const thisYear = now.getFullYear();
+  const todayStr = now.toISOString().split('T')[0];
+
+  let revenue = 0;
+  records.forEach(r => {
+    if(!r.serviceDate) return;
+    const d = new Date(r.serviceDate);
+    if(d.getMonth() === thisMonth && d.getFullYear() === thisYear){
+      const amt = parseFloat(r.amount) || 0;
+      revenue += amt;
+    }
+  });
+  document.getElementById('stat-revenue').textContent = '$' + revenue.toFixed(0);
+
+  const todayCount = records.filter(r => {
+    if(!r.serviceDate) return false;
+    return r.serviceDate.split('T')[0] === todayStr;
+  }).length;
+  document.getElementById('stat-today').textContent = todayCount;
+
+  const lashDays = state.settings.lashReminderDays;
+  const nailDays = state.settings.nailReminderDays;
+  const overdue = [];
+
+  clients.forEach(c => {
+    const lashRecs = records.filter(r => r.clientId === c.id && r.type === 'lash')
+      .sort((a,b) => new Date(b.serviceDate) - new Date(a.serviceDate));
+    const nailRecs = records.filter(r => r.clientId === c.id && r.type === 'nail')
+      .sort((a,b) => new Date(b.serviceDate) - new Date(a.serviceDate));
+
+    const mode = state.settings.businessMode;
+    const today = new Date();
+    today.setHours(0,0,0,0);
+
+    if(mode === 'lash' || mode === 'both'){
+      if(lashRecs.length > 0){
+        const lastDate = new Date(lashRecs[0].serviceDate);
+        lastDate.setHours(0,0,0,0);
+        const diff = Math.floor((today - lastDate) / 86400000);
+        if(diff >= lashDays){
+          overdue.push({ client: c, type: 'lash', days: diff, lastDate: lashRecs[0].serviceDate });
+        }
+      }
+    }
+    if(mode === 'nail' || mode === 'both'){
+      if(nailRecs.length > 0){
+        const lastDate = new Date(nailRecs[0].serviceDate);
+        lastDate.setHours(0,0,0,0);
+        const diff = Math.floor((today - lastDate) / 86400000);
+        if(diff >= nailDays){
+          overdue.push({ client: c, type: 'nail', days: diff, lastDate: nailRecs[0].serviceDate });
+        }
+      }
+    }
+  });
+
+  overdue.sort((a,b) => b.days - a.days);
+  document.getElementById('stat-overdue').textContent = overdue.length;
+
+  const list = document.getElementById('followup-list');
+  if(overdue.length === 0){
+    list.innerHTML = `
+      <div class="empty-state">
+        <div class="icon">✓</div>
+        <div class="text">No overdue follow-ups</div>
+        <div class="sub">All clients are up to date</div>
+      </div>`;
+    return;
+  }
+
+  list.innerHTML = overdue.map(item => {
+    const name = item.client.name || 'Unknown';
+    const phone = item.client.phone || '';
+    const typeLabel = item.type === 'lash' ? 'Lash' : 'Nail';
+    const copyText = `Hi ${name.split(' ')[0]}, gentle reminder for your ${typeLabel.toLowerCase()} touch-up. It's been ${item.days} days since your last visit. Reply to book your appointment!`;
+    return `
+      <div class="followup-item">
+        <div class="followup-info">
+          <div class="followup-name">${escapeHtml(name)}
+            <span class="followup-type">${typeLabel}</span>
+          </div>
+          <div class="followup-detail">${phone ? escapeHtml(phone) + ' · ' : ''}${item.days} days ago</div>
+        </div>
+        <button class="btn-copy" onclick="copyFollowupText('${escapeAttr(copyText)}')">Copy Text</button>
+      </div>`;
+  }).join('');
+}
+
+function copyFollowupText(text){
+  navigator.clipboard.writeText(text).then(() => {
+    showToast('Copied to clipboard');
+  }).catch(() => {
+    const ta = document.createElement('textarea');
+    ta.value = text;
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand('copy');
+    document.body.removeChild(ta);
+    showToast('Copied to clipboard');
+  });
+}
+
+/* ====== Clients ====== */
+async function renderClients(){
+  const clients = await dbGetAll('clients');
+  const records = await dbGetAll('records');
+  const grid = document.getElementById('client-grid');
+
+  if(clients.length === 0){
+    grid.innerHTML = `
+      <div class="empty-state" style="grid-column:1/-1">
+        <div class="icon">+</div>
+        <div class="text">No clients yet</div>
+        <div class="sub">Click "New Client" to add your first client</div>
+      </div>`;
+    return;
+  }
+
+  clients.sort((a,b) => (a.name || '').localeCompare(b.name || ''));
+
+  grid.innerHTML = clients.map(c => {
+    const clientRecs = records.filter(r => r.clientId === c.id)
+      .sort((a,b) => new Date(b.serviceDate) - new Date(a.serviceDate));
+    const lastRec = clientRecs[0];
+    const lastDate = lastRec ? formatDate(lastRec.serviceDate) : '—';
+    const lastType = lastRec ? (lastRec.type === 'lash' ? 'Lash' : 'Nail') : '';
+
+    return `
+      <div class="client-card" onclick="editClient('${c.id}')">
+        <div class="name">${escapeHtml(c.name || 'Unknown')}${lastType ? `<span class="service-type">${lastType}</span>` : ''}</div>
+        <div class="phone">${escapeHtml(c.phone || 'No phone')}</div>
+        <div class="last-service">Last visit: ${lastDate}</div>
+        <button class="btn-delete-client" onclick="event.stopPropagation();deleteClient('${c.id}','${escapeAttr(c.name || 'Unknown')}')" title="Delete">Delete</button>
+      </div>`;
+  }).join('');
+}
+
+async function editClient(id){
+  state.editingClientId = id;
+  state.photoData = {};
+  const client = await dbGet('clients', id);
+  if(!client){ showToast('Client not found'); return; }
+
+  document.getElementById('f-name').value = client.name || '';
+  document.getElementById('f-phone').value = client.phone || '';
+  document.getElementById('f-ig').value = client.instagram || '';
+  document.getElementById('f-notes').value = client.notes || '';
+
+  const records = await dbGetAll('records');
+  const clientRecs = records.filter(r => r.clientId === id)
+    .sort((a,b) => new Date(b.serviceDate) - new Date(a.serviceDate));
+  const lastRec = clientRecs[0];
+
+  if(lastRec){
+    document.getElementById('f-date').value = lastRec.serviceDate ? lastRec.serviceDate.split('T')[0] : todayStr();
+    updateDateDisplay();
+    document.getElementById('f-amount').value = lastRec.amount || '';
+    document.getElementById('f-payment').value = lastRec.paymentMethod || '';
+    document.getElementById('f-staff').value = lastRec.staff || '';
+
+    if(lastRec.type === 'lash'){
+      // Load pill button values
+      setPillValueByData('style', lastRec.lashStyle || '');
+      setPillValueByData('curl', lastRec.curl || '');
+      setPillValueByData('thickness', lastRec.thickness || '');
+      // Load lash map lengths (7 zones)
+      if(lastRec.lashMap){
+        state.lashMap.z1 = lastRec.lashMap.z1 || 11;
+        state.lashMap.z2 = lastRec.lashMap.z2 || 11;
+        state.lashMap.z3 = lastRec.lashMap.z3 || 12;
+        state.lashMap.z4 = lastRec.lashMap.z4 || 12;
+        state.lashMap.z5 = lastRec.lashMap.z5 || 12;
+        state.lashMap.z6 = lastRec.lashMap.z6 || 11;
+        state.lashMap.z7 = lastRec.lashMap.z7 || 11;
+      } else {
+        state.lashMap = { z1: 11, z2: 11, z3: 12, z4: 12, z5: 12, z6: 11, z7: 11 };
+      }
+      updateLashMapDisplay();
+      selectLashZone('z4');
+      document.getElementById('f-adhesive').value = lastRec.adhesive || '';
+      document.getElementById('f-lash-notes').value = lastRec.lashNotes || '';
+
+      if(lastRec.photos){
+        setPhotoPreview('lash-before', lastRec.photos.lashBefore);
+        setPhotoPreview('lash-after', lastRec.photos.lashAfter);
+        setPhotoPreview('lash-map', lastRec.photos.lashMap);
+      }
+    }
+
+    if(lastRec.type === 'nail'){
+      document.getElementById('f-shape').value = lastRec.shape || '';
+      document.getElementById('f-nail-length').value = lastRec.nailLength || '';
+      document.getElementById('f-service-type').value = lastRec.serviceType || '';
+      document.getElementById('f-color').value = lastRec.colorDesign || '';
+      document.getElementById('f-design').value = lastRec.design || '';
+      document.getElementById('f-nail-notes').value = lastRec.nailNotes || '';
+
+      if(lastRec.photos){
+        setPhotoPreview('nail-inspiration', lastRec.photos.nailInspiration);
+        setPhotoPreview('nail-final', lastRec.photos.nailFinal);
+      }
+    }
+
+    if(state.settings.businessMode === 'both'){
+      switchIntakeSub(lastRec.type);
+    }
+  } else {
+    document.getElementById('f-date').value = todayStr();
+    updateDateDisplay();
+  }
+
+  document.getElementById('intake-title').textContent = 'Edit Client';
+  refreshStaffList();
+  applyBusinessMode();
+  navigateTo('intake');
+}
+
+function setPhotoPreview(key, base64){
+  if(!base64) return;
+  state.photoData[key] = base64;
+  const el = document.querySelector(`[data-photo="${key}"]`);
+  if(el){
+    el.classList.add('has-image');
+    el.innerHTML = `<img src="${base64}"><button class="remove-btn" onclick="event.stopPropagation();removePhoto('${key}')">×</button>`;
+  }
+}
+
+/* ====== Lash Map & Pill Button Functions ====== */
+function selectLashZone(zone){
+  state.selectedLashZone = zone;
+  // Update SVG zones
+  document.querySelectorAll('.lash-map-zone').forEach(g => {
+    g.classList.toggle('active', g.dataset.zone === zone);
+  });
+  // Update segment cards
+  document.querySelectorAll('.length-segment').forEach(s => {
+    s.classList.toggle('active', s.dataset.zone === zone);
+  });
+}
+
+function adjustLength(zone, delta){
+  const current = state.lashMap[zone];
+  const next = Math.max(5, Math.min(20, current + delta));
+  state.lashMap[zone] = next;
+  updateLashMapDisplay();
+}
+
+function updateLashMapDisplay(){
+  const zones = ['z1', 'z2', 'z3', 'z4', 'z5', 'z6', 'z7'];
+  zones.forEach(z => {
+    const val = state.lashMap[z];
+    // Update SVG text
+    const mapEl = document.getElementById(`map-${z}-value`);
+    if(mapEl) mapEl.textContent = val + 'mm';
+    // Update segment value
+    const segEl = document.getElementById(`seg-${z}-val`);
+    if(segEl){
+      segEl.innerHTML = val + '<span class="length-segment-unit">mm</span>';
+    }
+  });
+}
+
+function setPillValue(group, btnEl){
+  const val = btnEl.dataset.val;
+  const groupId = group + '-pills';
+  const container = document.getElementById(groupId);
+  if(!container) return;
+
+  // Toggle: if clicking already active, deselect
+  const isActive = btnEl.classList.contains('active');
+  container.querySelectorAll('.pill-btn').forEach(b => b.classList.remove('active'));
+
+  let next = '';
+  if(!isActive){
+    btnEl.classList.add('active');
+    next = val;
+  }
+  state.pillValues[group] = next;
+
+  // Sync custom input (only for groups that have one)
+  const customEl = document.getElementById(group + '-custom');
+  if(customEl) customEl.value = next;
+}
+
+function setPillValueByData(group, value){
+  const groupId = group + '-pills';
+  const container = document.getElementById(groupId);
+  if(!container) return;
+
+  container.querySelectorAll('.pill-btn').forEach(b => {
+    b.classList.toggle('active', b.dataset.val === value);
+  });
+  state.pillValues[group] = value || '';
+
+  // Sync custom input (only for groups that have one)
+  const customEl = document.getElementById(group + '-custom');
+  if(customEl) customEl.value = value || '';
+}
+
+function onPillCustomInput(group, value){
+  state.pillValues[group] = value;
+  // Deactivate any pill button that doesn't match the typed value
+  const groupId = group + '-pills';
+  const container = document.getElementById(groupId);
+  if(container){
+    container.querySelectorAll('.pill-btn').forEach(b => {
+      b.classList.toggle('active', b.dataset.val === value);
+    });
+  }
+}
+
+function resetPillButtons(){
+  document.querySelectorAll('.pill-group').forEach(group => {
+    group.querySelectorAll('.pill-btn').forEach(b => b.classList.remove('active'));
+  });
+  // Clear custom inputs too
+  ['style', 'curl'].forEach(g => {
+    const el = document.getElementById(g + '-custom');
+    if(el) el.value = '';
+  });
+  state.pillValues = { style: '', curl: '', thickness: '' };
+}
+
+function resetLashMap(){
+  state.lashMap = { z1: 11, z2: 11, z3: 12, z4: 12, z5: 12, z6: 11, z7: 11 };
+  state.selectedLashZone = 'z4';
+  updateLashMapDisplay();
+  selectLashZone('z4');
+}
+
+/* ====== Intake Form ====== */
+function resetIntakeForm(){
+  document.querySelectorAll('#page-intake .input, #page-intake .select, #page-intake textarea').forEach(el => {
+    el.value = '';
+  });
+  document.getElementById('f-date').value = todayStr();
+  updateDateDisplay();
+
+  document.querySelectorAll('.photo-upload').forEach(el => {
+    el.classList.remove('has-image');
+    const label = el.dataset.photo;
+    const labels = {
+      'lash-before': 'Before',
+      'lash-after': 'After',
+      'lash-map': 'Map Chart',
+      'nail-inspiration': 'Inspiration',
+      'nail-final': 'Final Result'
+    };
+    el.innerHTML = `<div class="photo-label">${labels[label] || label}</div>`;
+  });
+  state.photoData = {};
+  state.intakeSubMode = 'lash';
+  // Reset lash map and pill buttons
+  resetLashMap();
+  resetPillButtons();
+  document.querySelectorAll('.seg-btn').forEach(b => {
+    b.classList.toggle('active', b.dataset.sub === 'lash');
+  });
+  applyStaffMode();
+}
+
+/* ====== Image Compression ====== */
+function uploadPhoto(el){
+  const key = el.dataset.photo;
+  const input = document.createElement('input');
+  input.type = 'file';
+  input.accept = 'image/*';
+  input.onchange = async (e) => {
+    const file = e.target.files[0];
+    if(!file) return;
+    const compressed = await compressImage(file, 1280, 0.7);
+    state.photoData[key] = compressed;
+    el.classList.add('has-image');
+    el.innerHTML = `<img src="${compressed}"><button class="remove-btn" onclick="event.stopPropagation();removePhoto('${key}')">×</button>`;
+  };
+  input.click();
+}
+
+function removePhoto(key){
+  delete state.photoData[key];
+  const el = document.querySelector(`[data-photo="${key}"]`);
+  if(el){
+    el.classList.remove('has-image');
+    const labels = {
+      'lash-before': 'Before',
+      'lash-after': 'After',
+      'lash-map': 'Map Chart',
+      'nail-inspiration': 'Inspiration',
+      'nail-final': 'Final Result'
+    };
+    el.innerHTML = `<div class="photo-label">${labels[key] || key}</div>`;
+  }
+}
+
+function compressImage(file, maxDim, quality){
+  return new Promise((resolve) => {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const img = new Image();
+      img.onload = () => {
+        let { width, height } = img;
+        if(width > maxDim || height > maxDim){
+          if(width > height){
+            height = Math.round(height * maxDim / width);
+            width = maxDim;
+          } else {
+            width = Math.round(width * maxDim / height);
+            height = maxDim;
+          }
+        }
+        const canvas = document.createElement('canvas');
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0, width, height);
+
+        let dataUrl = canvas.toDataURL('image/jpeg', quality);
+        let q = quality;
+        while(dataUrl.length > 300 * 1024 * 1.37 && q > 0.3){
+          q -= 0.1;
+          dataUrl = canvas.toDataURL('image/jpeg', q);
+        }
+        resolve(dataUrl);
+      };
+      img.src = e.target.result;
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
+/* ====== Save Intake ====== */
+async function saveIntake(){
+  const name = document.getElementById('f-name').value.trim();
+  if(!name){
+    showToast('Please enter client name');
+    return;
+  }
+
+  const clientData = {
+    id: state.editingClientId || genId(),
+    name: name,
+    phone: document.getElementById('f-phone').value.trim(),
+    instagram: document.getElementById('f-ig').value.trim(),
+    notes: document.getElementById('f-notes').value.trim(),
+    updatedAt: Date.now()
+  };
+
+  if(!state.editingClientId){
+    clientData.createdAt = Date.now();
+  } else {
+    const existing = await dbGet('clients', state.editingClientId);
+    if(existing) clientData.createdAt = existing.createdAt;
+  }
+
+  await dbAdd('clients', clientData);
+
+  const mode = state.settings.businessMode;
+  let recType;
+  if(mode === 'lash') recType = 'lash';
+  else if(mode === 'nail') recType = 'nail';
+  else recType = state.intakeSubMode;
+
+  const photos = {};
+  if(recType === 'lash'){
+    photos.lashBefore = state.photoData['lash-before'] || '';
+    photos.lashAfter = state.photoData['lash-after'] || '';
+    photos.lashMap = state.photoData['lash-map'] || '';
+  } else {
+    photos.nailInspiration = state.photoData['nail-inspiration'] || '';
+    photos.nailFinal = state.photoData['nail-final'] || '';
+  }
+
+  const record = {
+    id: genId(),
+    clientId: clientData.id,
+    type: recType,
+    serviceDate: document.getElementById('f-date').value || todayStr(),
+    amount: document.getElementById('f-amount').value || '',
+    paymentMethod: document.getElementById('f-payment').value || '',
+    staff: document.getElementById('f-staff').value.trim() || '',
+    lashStyle: state.pillValues.style || '',
+    curl: state.pillValues.curl || '',
+    thickness: state.pillValues.thickness || '',
+    lashMap: { z1: state.lashMap.z1, z2: state.lashMap.z2, z3: state.lashMap.z3, z4: state.lashMap.z4, z5: state.lashMap.z5, z6: state.lashMap.z6, z7: state.lashMap.z7 },
+    length: `${state.lashMap.z1}/${state.lashMap.z2}/${state.lashMap.z3}/${state.lashMap.z4}/${state.lashMap.z5}/${state.lashMap.z6}/${state.lashMap.z7}mm`,
+    adhesive: document.getElementById('f-adhesive').value || '',
+    lashNotes: document.getElementById('f-lash-notes').value || '',
+    shape: document.getElementById('f-shape').value || '',
+    nailLength: document.getElementById('f-nail-length').value || '',
+    serviceType: document.getElementById('f-service-type').value || '',
+    colorDesign: document.getElementById('f-color').value || '',
+    design: document.getElementById('f-design').value || '',
+    nailNotes: document.getElementById('f-nail-notes').value || '',
+    photos: photos,
+    createdAt: Date.now()
+  };
+
+  await dbAdd('records', record);
+
+  showToast('Record saved');
+  setTimeout(() => navigateTo('clients'), 600);
+}
+
+/* ====== Settings: Reminder Rules ====== */
+function saveReminderRules(){
+  state.settings.lashReminderDays = parseInt(document.getElementById('set-lash-days').value) || 14;
+  state.settings.nailReminderDays = parseInt(document.getElementById('set-nail-days').value) || 21;
+  saveSettings();
+  showToast('Reminder rules saved');
+}
+
+/* ====== Export / Import ====== */
+async function exportJSON(){
+  const clients = await dbGetAll('clients');
+  const records = await dbGetAll('records');
+  const data = {
+    version: 1,
+    exportDate: new Date().toISOString(),
+    settings: state.settings,
+    clients: clients,
+    records: records
+  };
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `lash-nail-backup-${todayStr()}.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+  showToast('Data exported');
+}
+
+async function exportCSV(){
+  const clients = await dbGetAll('clients');
+  const records = await dbGetAll('records');
+
+  const clientMap = {};
+  clients.forEach(c => { clientMap[c.id] = c; });
+
+  const headers = ['Client Name','Phone','Instagram','Staff','Service Type','Date','Amount','Payment','Lash Style','Curl','Thickness','Front (mm)','P2 (mm)','P3 (mm)','Center (mm)','P5 (mm)','P6 (mm)','End (mm)','Length','Adhesive','Lash Notes','Nail Shape','Nail Length','Service Type','Color/Code','Design','Nail Notes'];
+  const rows = [headers.join(',')];
+
+  records.forEach(r => {
+    const c = clientMap[r.clientId] || {};
+    const z1 = r.lashMap ? (r.lashMap.z1 || '') : '';
+    const z2 = r.lashMap ? (r.lashMap.z2 || '') : '';
+    const z3 = r.lashMap ? (r.lashMap.z3 || '') : '';
+    const z4 = r.lashMap ? (r.lashMap.z4 || '') : '';
+    const z5 = r.lashMap ? (r.lashMap.z5 || '') : '';
+    const z6 = r.lashMap ? (r.lashMap.z6 || '') : '';
+    const z7 = r.lashMap ? (r.lashMap.z7 || '') : '';
+    const row = [
+      csvEscape(c.name || ''),
+      csvEscape(c.phone || ''),
+      csvEscape(c.instagram || ''),
+      csvEscape(r.staff || ''),
+      r.type === 'lash' ? 'Lash' : 'Nail',
+      formatDate(r.serviceDate),
+      r.amount || '0',
+      csvEscape(r.paymentMethod || ''),
+      csvEscape(r.lashStyle || ''),
+      csvEscape(r.curl || ''),
+      csvEscape(r.thickness || ''),
+      z1,
+      z2,
+      z3,
+      z4,
+      z5,
+      z6,
+      z7,
+      csvEscape(r.length || ''),
+      csvEscape(r.adhesive || ''),
+      csvEscape(r.lashNotes || ''),
+      csvEscape(r.shape || ''),
+      csvEscape(r.nailLength || ''),
+      csvEscape(r.serviceType || ''),
+      csvEscape(r.colorDesign || ''),
+      csvEscape(r.design || ''),
+      csvEscape(r.nailNotes || '')
+    ];
+    rows.push(row.join(','));
+  });
+
+  const csv = rows.join('\n');
+  const blob = new Blob([csv], { type: 'text/csv' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `lash-nail-records-${todayStr()}.csv`;
+  a.click();
+  URL.revokeObjectURL(url);
+  showToast('CSV exported');
+}
+
+function csvEscape(str){
+  if(!str) return '';
+  str = String(str);
+  if(str.includes(',') || str.includes('"') || str.includes('\n')){
+    return '"' + str.replace(/"/g, '""') + '"';
+  }
+  return str;
+}
+
+async function deleteClient(id, name){
+  if(!confirm(`Delete "${name}" and all related records? This cannot be undone.`)){
+    return;
+  }
+  const records = await dbGetAll('records');
+  for(const r of records){
+    if(r.clientId === id){
+      await dbDelete('records', r.id);
+    }
+  }
+  await dbDelete('clients', id);
+  showToast('Client deleted');
+  renderClients();
+}
+
+async function importJSON(event){
+  const file = event.target.files[0];
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = async (e) => {
+    try {
+      const data = JSON.parse(e.target.result);
+      if(!data.clients || !data.records){
+        showToast('Invalid backup file');
+        return;
+      }
+      await dbClear('clients');
+      await dbClear('records');
+      for(const c of data.clients) await dbAdd('clients', c);
+      for(const r of data.records) await dbAdd('records', r);
+      if(data.settings){
+        state.settings = { ...state.settings, ...data.settings };
+        saveSettings();
+      }
+      showToast('Data imported successfully');
+      renderClients();
+    } catch(err){
+      showToast('Import failed: ' + err.message);
+    }
+  };
+  reader.readAsText(file);
+  event.target.value = '';
+}
+
+/* ====== Utils ====== */
+function genId(){
+  return 'id_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2, 8);
+}
+
+function todayStr(){
+  const d = new Date();
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${y}-${m}-${day}`;
+}
+
+function formatDate(dateStr){
+  if(!dateStr) return '—';
+  const d = new Date(dateStr);
+  if(isNaN(d.getTime())) return '—';
+  const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  return months[d.getMonth()] + ' ' + d.getDate() + ', ' + d.getFullYear();
+}
+
+function escapeHtml(str){
+  if(!str) return '';
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+}
+
+function escapeAttr(str){
+  if(!str) return '';
+  return String(str).replace(/'/g, "\\'").replace(/"/g, '&quot;');
+}
+
+function showToast(msg){
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(t._timer);
+  t._timer = setTimeout(() => t.classList.remove('show'), 2500);
+}
+
+/* ====== Date Display (English) ====== */
+function updateDateDisplay(){
+  const input = document.getElementById('f-date');
+  const overlay = document.getElementById('date-overlay');
+  if(!input || !overlay) return;
+  if(input.value){
+    overlay.textContent = formatDate(input.value);
+    overlay.classList.remove('empty');
+  } else {
+    overlay.textContent = '';
+    overlay.classList.add('empty');
+  }
+}
+
+/* ====== Init ====== */
+async function init(){
+  try {
+    await initDB();
+  } catch(e) {
+    showToast('Database init failed');
+    console.error(e);
+  }
+  loadSettings();
+  document.getElementById('f-date').value = todayStr();
+  updateDateDisplay();
+  document.getElementById('f-date').addEventListener('change', updateDateDisplay);
+  document.getElementById('f-date').addEventListener('input', updateDateDisplay);
+  // Initialize lash map display
+  updateLashMapDisplay();
+  selectLashZone('z3');
+  document.querySelectorAll('.nav-item').forEach(item => {
+    item.addEventListener('click', () => navigateTo(item.dataset.page));
+  });
+  renderDashboard();
+}
+
+init();
+</script>
+</body>
+</html>

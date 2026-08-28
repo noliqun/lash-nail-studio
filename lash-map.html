@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LASH MAP</title>
+<style>
+  *{margin:0;padding:0;box-sizing:border-box;}
+  html,body{height:100%;}
+  body{
+    background:#ffffff;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    min-height:100vh;
+    font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;
+    -webkit-font-smoothing:antialiased;
+  }
+  .stage{
+    width:100%;
+    max-width:450px;
+    aspect-ratio:9/16;
+    background:#ffffff;
+    position:relative;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    padding:30px 14px 18px;
+  }
+  .title{
+    color:#cfcfcf;
+    font-size:30px;
+    font-weight:700;
+    letter-spacing:11px;
+    text-transform:uppercase;
+    text-align:center;
+    margin-bottom:4px;
+    padding-left:11px; /* visual balance for letter-spacing */
+  }
+  .map-wrap{
+    width:100%;
+    flex:1;
+    display:flex;
+    align-items:stretch;
+    justify-content:center;
+    min-height:0;
+  }
+  svg.lashmap{
+    width:100%;
+    height:100%;
+    display:block;
+  }
+
+  /* Editable label cells (rendered inside foreignObject) */
+  .label{
+    width:66px;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:flex-end;
+    line-height:1.05;
+    user-select:none;
+  }
+  .zone-name{
+    color:#ffffff;
+    font-size:9px;
+    font-weight:700;
+    letter-spacing:1.4px;
+    opacity:.82;
+    margin-bottom:3px;
+  }
+  .len{
+    color:#ffffff;
+    font-size:17px;
+    font-weight:700;
+    display:flex;
+    align-items:baseline;
+    justify-content:center;
+  }
+  .len-input{
+    width:24px;
+    background:transparent;
+    border:none;
+    border-bottom:1px dashed rgba(255,255,255,.35);
+    outline:none;
+    color:#fff;
+    font-size:17px;
+    font-weight:700;
+    text-align:center;
+    padding:0 0 1px;
+    font-family:inherit;
+    caret-color:#fff;
+  }
+  .len-input:focus{
+    border-bottom-color:rgba(255,255,255,.85);
+  }
+  .len .mm{font-size:13px;font-weight:600;margin-left:1px;}
+</style>
+</head>
+<body>
+<div class="stage">
+  <div class="title">LASH MAP</div>
+  <div class="map-wrap">
+    <svg class="lashmap" viewBox="0 0 450 800" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <marker id="arrowhead" markerWidth="11" markerHeight="11" refX="9" refY="5.5" orient="auto" markerUnits="strokeWidth">
+          <path d="M0,0 L11,5.5 L0,11 L3,5.5 Z" fill="#ffffff"/>
+        </marker>
+      </defs>
+
+      <!-- Top curved directional arrow (left -> right), mirrors eye arch -->
+      <path d="M 78 132 Q 225 46 372 132"
+            fill="none" stroke="#ffffff" stroke-width="2.6"
+            stroke-linecap="round" marker-end="url(#arrowhead)"/>
+
+      <!-- 7 white vertical guide lines (each ends on the upper edge of the shape) -->
+      <g stroke="#ffffff" stroke-width="1.35" stroke-linecap="round">
+        <line x1="75"  y1="220" x2="75"  y2="582"/>
+        <line x1="125" y1="220" x2="125" y2="552"/>
+        <line x1="175" y1="220" x2="175" y2="535"/>
+        <line x1="225" y1="220" x2="225" y2="530"/>
+        <line x1="275" y1="220" x2="275" y2="535"/>
+        <line x1="325" y1="220" x2="325" y2="552"/>
+        <line x1="375" y1="220" x2="375" y2="582"/>
+      </g>
+
+      <!-- Black crescent / fan eye shape (flatter + thinner mid band) -->
+      <path d="M 55 600 C 150 507 300 507 395 600 C 300 557 150 557 55 600 Z"
+            fill="#000000"/>
+
+      <!-- Point markers sitting on the upper edge of the shape -->
+      <g fill="#ffffff">
+        <circle cx="75"  cy="582" r="3"/>
+        <circle cx="125" cy="552" r="3"/>
+        <circle cx="175" cy="535" r="3"/>
+        <circle cx="225" cy="530" r="3"/>
+        <circle cx="275" cy="535" r="3"/>
+        <circle cx="325" cy="552" r="3"/>
+        <circle cx="375" cy="582" r="3"/>
+      </g>
+
+      <!-- Editable length labels (only the mm digits are editable) -->
+      <foreignObject x="42"  y="168" width="66" height="50">
+        <div xmlns="http://www.w3.org/1999/xhtml" class="label">
+          <span class="zone-name">FRONT</span>
+          <span class="len"><input class="len-input" data-zone="1" type="text" value="11" maxlength="2" inputmode="numeric">mm</span>
+        </div>
+      </foreignObject>
+      <foreignObject x="92"  y="168" width="66" height="50">
+        <div xmlns="http://www.w3.org/1999/xhtml" class="label">
+          <span class="len"><input class="len-input" data-zone="2" type="text" value="11" maxlength="2" inputmode="numeric">mm</span>
+        </div>
+      </foreignObject>
+      <foreignObject x="142" y="168" width="66" height="50">
+        <div xmlns="http://www.w3.org/1999/xhtml" class="label">
+          <span class="len"><input class="len-input" data-zone="3" type="text" value="12" maxlength="2" inputmode="numeric">mm</span>
+        </div>
+      </foreignObject>
+      <foreignObject x="192" y="168" width="66" height="50">
+        <div xmlns="http://www.w3.org/1999/xhtml" class="label">
+          <span class="len"><input class="len-input" data-zone="4" type="text" value="12" maxlength="2" inputmode="numeric">mm</span>
+        </div>
+      </foreignObject>
+      <foreignObject x="242" y="168" width="66" height="50">
+        <div xmlns="http://www.w3.org/1999/xhtml" class="label">
+          <span class="len"><input class="len-input" data-zone="5" type="text" value="12" maxlength="2" inputmode="numeric">mm</span>
+        </div>
+      </foreignObject>
+      <foreignObject x="292" y="168" width="66" height="50">
+        <div xmlns="http://www.w3.org/1999/xhtml" class="label">
+          <span class="len"><input class="len-input" data-zone="6" type="text" value="11" maxlength="2" inputmode="numeric">mm</span>
+        </div>
+      </foreignObject>
+      <foreignObject x="342" y="168" width="66" height="50">
+        <div xmlns="http://www.w3.org/1999/xhtml" class="label">
+          <span class="zone-name">END</span>
+          <span class="len"><input class="len-input" data-zone="7" type="text" value="11" maxlength="2" inputmode="numeric">mm</span>
+        </div>
+      </foreignObject>
+    </svg>
+  </div>
+</div>
+<script>
+  (function(){
+    var inputs = document.querySelectorAll('.len-input');
+    var KEY = 'lashmap_lengths_v1';
+    function load(){
+      try{
+        var saved = JSON.parse(localStorage.getItem(KEY));
+        if(Object.prototype.toString.call(saved) === '[object Array]' && saved.length === 7){
+          for(var i=0;i<inputs.length;i++){ if(saved[i]) inputs[i].value = saved[i]; }
+        }
+      }catch(e){}
+    }
+    function save(){
+      var vals = [];
+      for(var i=0;i<inputs.length;i++){ vals.push(inputs[i].value); }
+      try{ localStorage.setItem(KEY, JSON.stringify(vals)); }catch(e){}
+    }
+    for(var i=0;i<inputs.length;i++){
+      (function(inp){
+        inp.addEventListener('input', function(){
+          inp.value = inp.value.replace(/[^0-9]/g,'').slice(0,2);
+          save();
+        });
+      })(inputs[i]);
+    }
+    load();
+  })();
+</script>
+</body>
+</html>
