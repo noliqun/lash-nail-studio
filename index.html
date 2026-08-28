@@ -185,6 +185,104 @@ input,select,textarea,button{font-family:inherit;font-size:inherit}
 }
 .client-card .btn-delete-client:hover{border-color:var(--danger)}
 
+/* ====== Client Detail Page ====== */
+.client-detail-header{
+  display:flex;
+  justify-content:space-between;
+  align-items:flex-start;
+  margin-bottom:6px;
+  gap:12px;
+}
+.client-detail-header h1{margin:0}
+.client-detail-actions{display:flex;gap:8px;flex-shrink:0}
+.btn-new-visit{
+  background:var(--accent);
+  color:#fff;
+  border:none;
+  border-radius:20px;
+  padding:9px 18px;
+  font-size:13px;
+  font-weight:500;
+  cursor:pointer;
+  transition:opacity .15s ease;
+  white-space:nowrap;
+}
+.btn-new-visit:hover{opacity:.9}
+.btn-back{
+  background:transparent;
+  border:1px solid var(--border);
+  border-radius:20px;
+  padding:9px 14px;
+  font-size:13px;
+  font-weight:500;
+  color:var(--text);
+  cursor:pointer;
+  transition:border-color .15s ease;
+  white-space:nowrap;
+}
+.btn-back:hover{border-color:var(--light-muted)}
+.client-info-card{
+  background:var(--card);
+  border:1px solid var(--border);
+  border-radius:var(--radius);
+  padding:18px;
+  margin-bottom:22px;
+}
+.client-info-row{
+  display:grid;
+  grid-template-columns:100px 1fr;
+  gap:10px;
+  padding:6px 0;
+  font-size:13px;
+}
+.client-info-row .label{color:var(--muted);font-weight:500}
+.client-info-row .value{color:var(--text);word-break:break-word}
+.visit-history-title{
+  font-size:13px;
+  font-weight:600;
+  color:var(--text);
+  margin-bottom:10px;
+  text-transform:uppercase;
+  letter-spacing:.5px;
+}
+.visit-list{display:flex;flex-direction:column;gap:10px}
+.visit-item{
+  background:var(--card);
+  border:1px solid var(--border);
+  border-radius:var(--radius);
+  padding:14px 16px;
+  cursor:pointer;
+  transition:border-color .15s ease;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:12px;
+}
+.visit-item:hover{border-color:var(--accent)}
+.visit-item-left{display:flex;flex-direction:column;gap:3px;min-width:0}
+.visit-date{font-size:14px;font-weight:500;color:var(--text)}
+.visit-type{
+  display:inline-block;
+  font-size:10px;
+  padding:2px 7px;
+  border-radius:4px;
+  background:#F0EBE3;
+  color:var(--accent);
+  margin-left:6px;
+  text-transform:uppercase;
+  letter-spacing:.4px;
+}
+.visit-summary{font-size:12px;color:var(--muted);margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.visit-item-right{font-size:11px;color:var(--light-muted);flex-shrink:0;white-space:nowrap}
+.visit-empty{
+  text-align:center;
+  padding:30px 20px;
+  color:var(--muted);
+  font-size:13px;
+  border:1px dashed var(--border);
+  border-radius:var(--radius);
+}
+
 /* ====== Intake form ====== */
 .intake-section{margin-bottom:28px}
 .section-header{
@@ -753,6 +851,23 @@ textarea{resize:vertical;min-height:60px}
       <div class="client-grid" id="client-grid"></div>
     </section>
 
+    <!-- ====== Client Detail ====== -->
+    <section id="page-client-detail" class="page">
+      <div class="client-detail-header">
+        <div style="min-width:0">
+          <button class="btn-back" onclick="goClients()">← All Clients</button>
+          <h1 class="page-title" id="detail-name" style="margin-top:10px">Client</h1>
+          <p class="page-sub" id="detail-sub">Visit history</p>
+        </div>
+        <div class="client-detail-actions">
+          <button class="btn-new-visit" onclick="newVisitFromClient()">+ New Visit</button>
+        </div>
+      </div>
+      <div class="client-info-card" id="detail-info-card"></div>
+      <div class="visit-history-title">Visit History</div>
+      <div class="visit-list" id="visit-list"></div>
+    </section>
+
     <!-- ====== Intake ====== -->
     <section id="page-intake" class="page">
       <h1 class="page-title" id="intake-title">New Intake</h1>
@@ -1234,6 +1349,8 @@ let db = null;
 const state = {
   currentPage: 'dashboard',
   editingClientId: null,
+  currentClientId: null,
+  viewingRecordId: '',
   intakeSubMode: 'lash',
   settings: { businessMode: 'both', lashReminderDays: 14, nailReminderDays: 21, multiStaff: false },
   photoData: {},
@@ -1405,8 +1522,10 @@ function navigateTo(page){
   state.currentPage = page;
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   document.getElementById('page-' + page).classList.add('active');
+  // sidebar highlight: client-detail → clients, others match directly
+  const navHighlight = page === 'client-detail' ? 'clients' : page;
   document.querySelectorAll('.nav-item').forEach(n => {
-    n.classList.toggle('active', n.dataset.page === page);
+    n.classList.toggle('active', n.dataset.page === navHighlight);
   });
   if(page === 'dashboard') renderDashboard();
   if(page === 'clients') renderClients();
@@ -1416,10 +1535,17 @@ function navigateTo(page){
 
 function goIntake(){
   state.editingClientId = null;
+  state.currentClientId = null;
+  state.viewingRecordId = '';
   state.photoData = {};
   resetIntakeForm();
+  resetPillButtons();
+  resetLashMap();
+  resetNailFields();
   refreshStaffList();
   document.getElementById('intake-title').textContent = 'New Intake';
+  const sub = document.querySelector('#page-intake .page-sub');
+  if(sub) sub.textContent = 'Register a new client & service';
   applyBusinessMode();
   navigateTo('intake');
 }
@@ -1560,13 +1686,235 @@ async function renderClients(){
     const lastType = lastRec ? (lastRec.type === 'lash' ? 'Lash' : 'Nail') : '';
 
     return `
-      <div class="client-card" onclick="editClient('${c.id}')">
+      <div class="client-card" onclick="viewClient('${c.id}')">
         <div class="name">${escapeHtml(c.name || 'Unknown')}${lastType ? `<span class="service-type">${lastType}</span>` : ''}</div>
         <div class="phone">${escapeHtml(c.phone || 'No phone')}</div>
         <div class="last-service">Last visit: ${lastDate}</div>
         <button class="btn-delete-client" onclick="event.stopPropagation();deleteClient('${c.id}','${escapeAttr(c.name || 'Unknown')}')" title="Delete">Delete</button>
       </div>`;
   }).join('');
+}
+
+/* ====== Client Detail & Visit History ====== */
+async function viewClient(id){
+  state.currentClientId = id;
+  const client = await dbGet('clients', id);
+  if(!client){ showToast('Client not found'); return; }
+  const records = await dbGetAll('records');
+  const clientRecs = records.filter(r => r.clientId === id)
+    .sort((a,b) => new Date(b.serviceDate) - new Date(a.serviceDate));
+
+  document.getElementById('detail-name').textContent = client.name || 'Unknown';
+  document.getElementById('detail-sub').textContent = `${clientRecs.length} visit${clientRecs.length === 1 ? '' : 's'}`;
+
+  // Client info card
+  const infoEl = document.getElementById('detail-info-card');
+  infoEl.innerHTML = `
+    <div class="client-info-row"><span class="label">Phone</span><span class="value">${escapeHtml(client.phone || '—')}</span></div>
+    <div class="client-info-row"><span class="label">Instagram</span><span class="value">${escapeHtml(client.instagram || '—')}</span></div>
+    <div class="client-info-row"><span class="label">Notes</span><span class="value">${escapeHtml(client.notes || '—')}</span></div>
+  `;
+
+  // Visit list
+  const listEl = document.getElementById('visit-list');
+  if(clientRecs.length === 0){
+    listEl.innerHTML = `<div class="visit-empty">No visits yet — tap + New Visit to record one</div>`;
+  } else {
+    listEl.innerHTML = clientRecs.map(r => {
+      const typeLabel = r.type === 'lash' ? 'Lash' : 'Nail';
+      const summary = buildVisitSummary(r);
+      const amount = r.amount ? `$${r.amount}` : '';
+      return `
+        <div class="visit-item" onclick="viewRecord('${r.id}')">
+          <div class="visit-item-left">
+            <div>
+              <span class="visit-date">${formatDate(r.serviceDate)}</span>
+              <span class="visit-type">${typeLabel}</span>
+            </div>
+            <div class="visit-summary">${escapeHtml(summary)}</div>
+          </div>
+          <div class="visit-item-right">${amount}</div>
+        </div>`;
+    }).join('');
+  }
+
+  navigateTo('client-detail');
+}
+
+function buildVisitSummary(r){
+  if(r.type === 'lash'){
+    const parts = [];
+    if(r.lashStyle) parts.push(r.lashStyle);
+    if(r.curl) parts.push(r.curl + ' curl');
+    if(r.length) parts.push(r.length);
+    return parts.join(' · ') || 'Lash service';
+  } else {
+    const parts = [];
+    if(r.serviceType) parts.push(r.serviceType);
+    if(r.shape) parts.push(r.shape);
+    if(r.colorDesign) parts.push(r.colorDesign);
+    return parts.join(' · ') || 'Nail service';
+  }
+}
+
+async function newVisitFromClient(){
+  const id = state.currentClientId;
+  if(!id) return;
+  state.editingClientId = id;
+  state.viewingRecordId = '';
+  const client = await dbGet('clients', id);
+  if(!client) return;
+
+  // Reset photo data for new visit
+  state.photoData = {};
+
+  // Fill client info
+  document.getElementById('f-name').value = client.name || '';
+  document.getElementById('f-phone').value = client.phone || '';
+  document.getElementById('f-ig').value = client.instagram || '';
+  document.getElementById('f-notes').value = client.notes || '';
+
+  // Load last record as template
+  const records = await dbGetAll('records');
+  const clientRecs = records.filter(r => r.clientId === id)
+    .sort((a,b) => new Date(b.serviceDate) - new Date(a.serviceDate));
+  const lastRec = clientRecs[0];
+
+  // Reset to defaults first
+  resetPillButtons();
+  state.lashMap = { z1: 11, z2: 11, z3: 12, z4: 12, z5: 12, z6: 11, z7: 11 };
+  updateLashMapDisplay();
+  selectLashZone('z4');
+  resetNailFields();
+
+  // Set today as default date
+  document.getElementById('f-date').value = todayStr();
+  updateDateDisplay();
+
+  // Clear amount/payment/staff/notes
+  document.getElementById('f-amount').value = '';
+  document.getElementById('f-payment').value = '';
+  document.getElementById('f-staff').value = '';
+  document.getElementById('f-adhesive').value = '';
+  document.getElementById('f-lash-notes').value = '';
+
+  // Pre-fill from last record if available
+  if(lastRec){
+    document.getElementById('f-payment').value = lastRec.paymentMethod || '';
+    document.getElementById('f-staff').value = lastRec.staff || '';
+    document.getElementById('f-adhesive').value = lastRec.adhesive || '';
+
+    if(lastRec.type === 'lash'){
+      setPillValueByData('style', lastRec.lashStyle || '');
+      setPillValueByData('curl', lastRec.curl || '');
+      setPillValueByData('thickness', lastRec.thickness || '');
+      if(lastRec.lashMap){
+        state.lashMap = {
+          z1: lastRec.lashMap.z1 || 11,
+          z2: lastRec.lashMap.z2 || 11,
+          z3: lastRec.lashMap.z3 || 12,
+          z4: lastRec.lashMap.z4 || 12,
+          z5: lastRec.lashMap.z5 || 12,
+          z6: lastRec.lashMap.z6 || 11,
+          z7: lastRec.lashMap.z7 || 11
+        };
+        updateLashMapDisplay();
+        selectLashZone('z4');
+      }
+      switchIntakeSub('lash');
+    } else if(lastRec.type === 'nail'){
+      document.getElementById('f-shape').value = lastRec.shape || '';
+      document.getElementById('f-nail-length').value = lastRec.nailLength || '';
+      document.getElementById('f-service-type').value = lastRec.serviceType || '';
+      document.getElementById('f-color').value = lastRec.colorDesign || '';
+      document.getElementById('f-design').value = lastRec.design || '';
+      switchIntakeSub('nail');
+    }
+  } else {
+    // No prior records, default to current business mode
+    const mode = state.settings.businessMode;
+    if(mode === 'both') switchIntakeSub('lash');
+  }
+
+  // Update intake title
+  document.getElementById('intake-title').textContent = 'New Visit';
+  const sub = document.querySelector('#page-intake .page-sub');
+  if(sub) sub.textContent = `for ${client.name || 'client'}`;
+
+  navigateTo('intake');
+}
+
+async function viewRecord(recordId){
+  const record = await dbGet('records', recordId);
+  if(!record) return;
+  const client = await dbGet('clients', record.clientId);
+  if(!client) return;
+
+  state.editingClientId = record.clientId;
+  state.viewingRecordId = recordId;
+  state.photoData = {};
+
+  // Fill client info
+  document.getElementById('f-name').value = client.name || '';
+  document.getElementById('f-phone').value = client.phone || '';
+  document.getElementById('f-ig').value = client.instagram || '';
+  document.getElementById('f-notes').value = client.notes || '';
+
+  // Reset then fill record data
+  resetPillButtons();
+  state.lashMap = { z1: 11, z2: 11, z3: 12, z4: 12, z5: 12, z6: 11, z7: 11 };
+
+  document.getElementById('f-date').value = record.serviceDate ? record.serviceDate.split('T')[0] : todayStr();
+  updateDateDisplay();
+  document.getElementById('f-amount').value = record.amount || '';
+  document.getElementById('f-payment').value = record.paymentMethod || '';
+  document.getElementById('f-staff').value = record.staff || '';
+
+  if(record.type === 'lash'){
+    setPillValueByData('style', record.lashStyle || '');
+    setPillValueByData('curl', record.curl || '');
+    setPillValueByData('thickness', record.thickness || '');
+    if(record.lashMap){
+      state.lashMap = {
+        z1: record.lashMap.z1 || 11,
+        z2: record.lashMap.z2 || 11,
+        z3: record.lashMap.z3 || 12,
+        z4: record.lashMap.z4 || 12,
+        z5: record.lashMap.z5 || 12,
+        z6: record.lashMap.z6 || 11,
+        z7: record.lashMap.z7 || 11
+      };
+    }
+    updateLashMapDisplay();
+    selectLashZone('z4');
+    document.getElementById('f-adhesive').value = record.adhesive || '';
+    document.getElementById('f-lash-notes').value = record.lashNotes || '';
+    if(record.photos){
+      setPhotoPreview('lash-before', record.photos.lashBefore);
+      setPhotoPreview('lash-after', record.photos.lashAfter);
+      setPhotoPreview('lash-map', record.photos.lashMap);
+    }
+    switchIntakeSub('lash');
+  } else {
+    document.getElementById('f-shape').value = record.shape || '';
+    document.getElementById('f-nail-length').value = record.nailLength || '';
+    document.getElementById('f-service-type').value = record.serviceType || '';
+    document.getElementById('f-color').value = record.colorDesign || '';
+    document.getElementById('f-design').value = record.design || '';
+    document.getElementById('f-nail-notes').value = record.nailNotes || '';
+    if(record.photos){
+      setPhotoPreview('nail-inspiration', record.photos.nailInspiration);
+      setPhotoPreview('nail-final', record.photos.nailFinal);
+    }
+    switchIntakeSub('nail');
+  }
+
+  // Update intake title
+  document.getElementById('intake-title').textContent = 'Visit Details';
+  const sub = document.querySelector('#page-intake .page-sub');
+  if(sub) sub.textContent = `${client.name || 'client'} · ${formatDate(record.serviceDate)}`;
+
+  navigateTo('intake');
 }
 
 async function editClient(id){
@@ -1762,6 +2110,14 @@ function resetLashMap(){
   selectLashZone('z4');
 }
 
+function resetNailFields(){
+  const ids = ['f-shape', 'f-nail-length', 'f-service-type', 'f-color', 'f-design', 'f-nail-notes'];
+  ids.forEach(id => {
+    const el = document.getElementById(id);
+    if(el) el.value = '';
+  });
+}
+
 /* ====== Intake Form ====== */
 function resetIntakeForm(){
   document.querySelectorAll('#page-intake .input, #page-intake .select, #page-intake textarea').forEach(el => {
@@ -1932,7 +2288,13 @@ async function saveIntake(){
   await dbAdd('records', record);
 
   showToast('Record saved');
-  setTimeout(() => navigateTo('clients'), 600);
+  setTimeout(() => {
+    if(state.currentClientId){
+      viewClient(state.currentClientId);
+    } else {
+      navigateTo('clients');
+    }
+  }, 600);
 }
 
 /* ====== Settings: Reminder Rules ====== */
