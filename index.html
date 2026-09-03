@@ -778,9 +778,178 @@ textarea{resize:vertical;min-height:60px}
 #main::-webkit-scrollbar{width:6px}
 #main::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
 #main::-webkit-scrollbar-track{background:transparent}
+/* ================================================================
+   Demo 版本限制样式 — 开始
+   ================================================================ */
+.demo-banner{
+  position:sticky;
+  top:0;
+  z-index:200;
+  background:linear-gradient(90deg,#FFF9F0,#FFF5E8);
+  border-bottom:1px solid #F0E0C8;
+  padding:8px 20px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:10px;
+  font-size:12.5px;
+  color:#8A7560;
+  transition:opacity .3s ease, max-height .3s ease;
+  max-height:40px;
+  overflow:hidden;
+}
+.demo-banner.hidden{opacity:0;max-height:0;padding:0;border:none;pointer-events:none}
+.demo-banner .banner-text{cursor:pointer}
+.demo-banner .banner-link{
+  font-weight:600;
+  color:#B8860B;
+  text-decoration:underline;
+  cursor:pointer;
+  white-space:nowrap;
+}
+.demo-banner .banner-close{
+  position:absolute;
+  right:12px;
+  background:none;
+  border:none;
+  font-size:16px;
+  color:#B0A090;
+  cursor:pointer;
+  padding:2px 6px;
+  border-radius:4px;
+  line-height:1;
+}
+.demo-banner .banner-close:hover{background:rgba(0,0,0,.05)}
+
+/* Paywall Modal */
+.paywall-overlay{
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,.45);
+  backdrop-filter:blur(4px);
+  -webkit-backdrop-filter:blur(4px);
+  z-index:300;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  opacity:0;
+  pointer-events:none;
+  transition:opacity .25s ease;
+}
+.paywall-overlay.show{opacity:1;pointer-events:auto}
+.paywall-modal{
+  background:#fff;
+  border-radius:16px;
+  max-width:380px;
+  width:90%;
+  padding:36px 28px 28px;
+  text-align:center;
+  box-shadow:0 20px 60px rgba(0,0,0,.15);
+  transform:translateY(20px) scale(.96);
+  transition:transform .25s ease;
+  position:relative;
+}
+.paywall-overlay.show .paywall-modal{transform:translateY(0) scale(1)}
+.paywall-modal .close-btn{
+  position:absolute;
+  top:12px;
+  right:12px;
+  background:none;
+  border:none;
+  font-size:20px;
+  color:#C0B8B0;
+  cursor:pointer;
+  padding:4px 8px;
+  border-radius:8px;
+  line-height:1;
+}
+.paywall-modal .close-btn:hover{background:#F5F2EE}
+.paywall-icon{
+  font-size:40px;
+  margin-bottom:12px;
+  display:block;
+}
+.paywall-modal h2{
+  font-size:20px;
+  font-weight:600;
+  color:#3D3A36;
+  margin-bottom:10px;
+  letter-spacing:-.3px;
+}
+.paywall-modal .subtext{
+  font-size:13px;
+  color:#9B958C;
+  line-height:1.6;
+  margin-bottom:20px;
+}
+.paywall-price{
+  display:inline-block;
+  background:linear-gradient(135deg,#FFF8F0,#FFF0E0);
+  border:1px solid #F0DCC0;
+  border-radius:10px;
+  padding:10px 24px;
+  margin-bottom:22px;
+}
+.paywall-price .amount{
+  font-size:24px;
+  font-weight:700;
+  color:#B8860B;
+}
+.paywall-price .note{
+  font-size:11px;
+  color:#9B958C;
+  display:block;
+  margin-top:2px;
+}
+.paywall-cta{
+  display:block;
+  width:100%;
+  padding:14px;
+  background:linear-gradient(135deg,#C4A484,#B8906E);
+  color:#fff;
+  border:none;
+  border-radius:12px;
+  font-size:15px;
+  font-weight:600;
+  cursor:pointer;
+  transition:transform .15s ease, box-shadow .15s ease;
+  margin-bottom:10px;
+}
+.paywall-cta:hover{
+  transform:translateY(-1px);
+  box-shadow:0 6px 20px rgba(196,164,132,.35);
+}
+.paywall-cta:active{transform:translateY(0)}
+.paywall-secondary{
+  display:block;
+  width:100%;
+  padding:10px;
+  background:none;
+  border:none;
+  font-size:13px;
+  color:#9B958C;
+  cursor:pointer;
+}
+.paywall-secondary:hover{color:#6B665E}
+/* ================================================================
+   Demo 版本限制样式 — 结束
+   ================================================================ */
 </style>
 </head>
 <body>
+
+<!-- ================================================================
+     Demo 版本 — 顶部提示横幅（开始）
+     ================================================================ -->
+<div id="demoBanner" class="demo-banner">
+  <span class="banner-text" onclick="showPaywall()">💡 You are trying the Free Demo (Limit: 2 Clients).</span>
+  <span class="banner-link" onclick="showPaywall()">Unlock Unlimited Access for $29.99</span>
+  <button class="banner-close" onclick="closeDemoBanner()">✕</button>
+</div>
+<!-- ================================================================
+     Demo 版本 — 顶部提示横幅（结束）
+     ================================================================ -->
+
 <div id="app">
 
   <!-- ====== Sidebar ====== -->
@@ -1533,7 +1702,12 @@ function navigateTo(page){
   if(page === 'intake') applyStaffMode();
 }
 
-function goIntake(){
+async function goIntake(){
+  // --- Demo 限制检查（新建客户时检查上限） ---
+  if(await isDemoClientLimitReached()){
+    showPaywall();
+    return; // 拦截：不允许进入新建客户页面
+  }
   state.editingClientId = null;
   state.currentClientId = null;
   state.viewingRecordId = '';
@@ -2226,6 +2400,14 @@ async function saveIntake(){
     return;
   }
 
+  // --- Demo 限制二次检查（保存时再次验证，防止绕过） ---
+  if(!state.editingClientId && !state.currentClientId){
+    if(await isDemoClientLimitReached()){
+      showPaywall();
+      return; // 拦截：不允许保存第 3 个客户
+    }
+  }
+
   const clientData = {
     id: state.editingClientId || genId(),
     name: name,
@@ -2498,6 +2680,77 @@ function updateDateDisplay(){
   }
 }
 
+/* ================================================================
+   Demo 版本限制逻辑 — 开始
+   ================================================================ */
+
+// --- Demo 配置参数 ---
+const DEMO_CLIENT_LIMIT = 2; // 【可调】Demo 版客户档案上限数量
+
+// ⚠️ 请将下面的链接替换为你的 Gumroad 购买页面链接
+// 例如: 'https://yourname.gumroad.com/l/lash-nail-studio'
+const YOUR_GUMROAD_LINK = 'YOUR_GUMROAD_LINK'; // ←←← 请修改此链接！！
+
+/**
+ * 检查是否已达到 Demo 客户上限
+ * @returns {Promise<boolean>} true=已达上限，false=未达上限
+ */
+async function isDemoClientLimitReached(){
+  try{
+    const clients = await dbGetAll('clients');
+    return clients.length >= DEMO_CLIENT_LIMIT;
+  }catch(e){
+    return false;
+  }
+}
+
+/**
+ * 弹出付费解锁弹窗
+ */
+function showPaywall(){
+  document.getElementById('paywallOverlay').classList.add('show');
+}
+
+/**
+ * 关闭付费解锁弹窗
+ */
+function closePaywall(){
+  document.getElementById('paywallOverlay').classList.remove('show');
+}
+
+/**
+ * 关闭顶部提示横幅
+ */
+function closeDemoBanner(){
+  document.getElementById('demoBanner').classList.add('hidden');
+}
+
+/**
+ * 在新标签页打开 Gumroad 购买链接
+ */
+function openGumroad(){
+  // ⚠️ 请确保将 YOUR_GUMROAD_LINK 替换为你的真实 Gumroad 链接
+  if(YOUR_GUMROAD_LINK === 'YOUR_GUMROAD_LINK'){
+    alert('⚠️ 请先在代码中设置你的 Gumroad 购买链接！(搜索 YOUR_GUMROAD_LINK)');
+    return;
+  }
+  window.open(YOUR_GUMROAD_LINK, '_blank');
+}
+
+// 点击遮罩层关闭弹窗
+document.addEventListener('DOMContentLoaded', function(){
+  const overlay = document.getElementById('paywallOverlay');
+  if(overlay){
+    overlay.addEventListener('click', function(e){
+      if(e.target === overlay) closePaywall();
+    });
+  }
+});
+
+/* ================================================================
+   Demo 版本限制逻辑 — 结束
+   ================================================================ */
+
 /* ====== Init ====== */
 async function init(){
   try {
@@ -2515,12 +2768,40 @@ async function init(){
   updateLashMapDisplay();
   selectLashZone('z3');
   document.querySelectorAll('.nav-item').forEach(item => {
-    item.addEventListener('click', () => navigateTo(item.dataset.page));
+    item.addEventListener('click', () => {
+      // --- Demo 限制：点击侧栏 Intake 按钮时走 goIntake（含上限检查） ---
+      if(item.dataset.page === 'intake'){
+        goIntake();
+      } else {
+        navigateTo(item.dataset.page);
+      }
+    });
   });
   renderDashboard();
 }
 
 init();
 </script>
+
+<!-- ================================================================
+     Demo 版本 — 付费解锁弹窗 Paywall Modal（开始）
+     ================================================================ -->
+<div id="paywallOverlay" class="paywall-overlay">
+  <div class="paywall-modal">
+    <button class="close-btn" onclick="closePaywall()">✕</button>
+    <span class="paywall-icon">✨</span>
+    <h2>Unlock Unlimited Access</h2>
+    <p class="subtext">You've reached the limit of 2 demo clients. Get full lifetime access, unlimited client logs, and 100% private local storage with NO monthly fees!</p>
+    <div class="paywall-price">
+      <span class="amount">Only $29.99</span>
+      <span class="note">One-Time Payment / Lifetime Access</span>
+    </div>
+    <button class="paywall-cta" onclick="openGumroad()">Get Lifetime Access Now 🚀</button>
+    <button class="paywall-secondary" onclick="closePaywall()">Continue Exploring Demo</button>
+  </div>
+</div>
+<!-- ================================================================
+     Demo 版本 — 付费解锁弹窗 Paywall Modal（结束）
+     ================================================================ -->
 </body>
 </html>
